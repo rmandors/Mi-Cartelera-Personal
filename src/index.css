@@ -1,0 +1,48 @@
+:root {
+  --bg: #14110e;
+  --ink: #f3eadf;
+  --muted: #a89884;
+  --amber: #e2a23a;
+  --serif: "Instrument Serif", Georgia, serif;
+  --sans: "Schibsted Grotesk", "Segoe UI", sans-serif;
+  color-scheme: dark;
+  font: 16px/1.45 var(--sans);
+  color: var(--ink);
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--amber);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.programa {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+.pagina {
+  width: min(920px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0 72px;
+}
