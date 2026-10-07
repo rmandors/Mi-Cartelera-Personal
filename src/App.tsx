@@ -1,9 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
+import { MarcoApp } from "./components/MarcoApp"
 import { RutaProtegida, SoloInvitados } from "./components/RutaProtegida"
 import { AuthProvider } from "./context/AuthContext"
+import { Buscar } from "./pages/Buscar"
+import { Inicio } from "./pages/Inicio"
 import { Login } from "./pages/Login"
 import { Registro } from "./pages/Registro"
-import { Inicio } from "./pages/Inicio"
 
 export default function App() {
   return (
@@ -15,7 +17,10 @@ export default function App() {
             <Route path="/registro" element={<Registro />} />
           </Route>
           <Route element={<RutaProtegida />}>
-            <Route path="/" element={<Inicio />} />
+            <Route element={<MarcoApp />}>
+              <Route path="/" element={<Inicio />} />
+              <Route path="/buscar" element={<Buscar />} />
+            </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
