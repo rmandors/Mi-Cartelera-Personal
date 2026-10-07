@@ -45,6 +45,8 @@ async function pedir<T>(ruta: string, params: Record<string, string>): Promise<T
     throw new Error("No se pudo contactar TMDB. Revisa tu conexión.")
   }
 
+  if (respuesta.status === 401) throw new Error("La clave de TMDB fue rechazada.")
+  if (respuesta.status === 404) throw new Error("TMDB ya no muestra este título.")
   if (!respuesta.ok) throw new Error("TMDB no respondió. Intenta de nuevo.")
   return (await respuesta.json()) as T
 }
