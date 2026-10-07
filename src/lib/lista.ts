@@ -30,7 +30,12 @@ export async function agregarTitulo(entrada: NuevoTitulo): Promise<ResultadoMuta
     estado: "por_ver",
   })
 
-  if (error) return { ok: false, error: error.message }
-  return { ok: true, error: null }
+  if (!error) return { ok: true, error: null }
+  const duplicado = error.code === "23505"
+  return {
+    ok: false,
+    duplicado,
+    error: duplicado ? "Ese título ya está en tu lista." : error.message,
+  }
 }
 
