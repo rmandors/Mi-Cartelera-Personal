@@ -27,6 +27,15 @@ export interface ItemLista {
   fecha_agregado: string
 }
 
+export interface ResultadoBusqueda {
+  tmdbId: number
+  titulo: string
+  posterUrl: string | null
+  anio: string | null
+  tipo: TipoContenido
+  sinopsis: string
+}
+
 export interface NuevoTitulo {
   tmdbId: number
   titulo: string
@@ -34,3 +43,6 @@ export interface NuevoTitulo {
   tipo: TipoContenido
 }
 
+export function claveTitulo(tipo: TipoContenido, tmdbId: number): string {
+  return `${tipo}:${tmdbId}`
+}
