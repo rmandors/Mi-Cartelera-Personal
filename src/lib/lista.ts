@@ -1,4 +1,4 @@
-import type { ItemLista, NuevoTitulo } from "../types/catalogo"
+import type { EstadoVisualizacion, ItemLista, NuevoTitulo } from "../types/catalogo"
 import { supabase } from "./supabase"
 
 const SIN_CONFIG = "Supabase no está configurado. Revisa .env."
@@ -39,3 +39,23 @@ export async function agregarTitulo(entrada: NuevoTitulo): Promise<ResultadoMuta
   }
 }
 
+export async function actualizarTitulo(
+  id: number,
+  cambios: {
+    estado?: EstadoVisualizacion
+    calificacion_personal?: number | null
+    comentario?: string | null
+  },
+): Promise<ResultadoMutacion> {
+  if (!supabase) return { ok: false, error: SIN_CONFIG }
+  const { error } = await supabase.from("mi_lista").update(cambios).eq("id", id)
+  if (error) return { ok: false, error: error.message }
+  return { ok: true, error: null }
+}
+
+export async function eliminarTitulo(id: number): Promise<ResultadoMutacion> {
+  if (!supabase) return { ok: false, error: SIN_CONFIG }
+  const { error } = await supabase.from("mi_lista").delete().eq("id", id)
+  if (error) return { ok: false, error: error.message }
+  return { ok: true, error: null }
+}

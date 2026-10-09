@@ -3,7 +3,7 @@ import { MarcoApp } from "./components/MarcoApp"
 import { RutaProtegida, SoloInvitados } from "./components/RutaProtegida"
 import { AuthProvider } from "./context/AuthContext"
 import { Buscar } from "./pages/Buscar"
-import { Inicio } from "./pages/Inicio"
+import { MiLista } from "./pages/MiLista"
 import { Login } from "./pages/Login"
 import { Registro } from "./pages/Registro"
 
@@ -18,7 +18,7 @@ export default function App() {
           </Route>
           <Route element={<RutaProtegida />}>
             <Route element={<MarcoApp />}>
-              <Route path="/" element={<Inicio />} />
+              <Route path="/" element={<MiLista />} />
               <Route path="/buscar" element={<Buscar />} />
             </Route>
           </Route>
