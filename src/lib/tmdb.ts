@@ -1,4 +1,4 @@
-import type { ResultadoBusqueda } from "../types/catalogo"
+import type { FichaTmdb, ResultadoBusqueda, TipoContenido } from "../types/catalogo"
 
 const BASE = "https://api.themoviedb.org/3"
 
@@ -15,6 +15,16 @@ interface CrudoBusqueda {
 
 interface RespuestaBusqueda {
   results?: CrudoBusqueda[]
+}
+
+interface RespuestaDetalle {
+  overview?: string
+  vote_average?: number
+  release_date?: string
+  first_air_date?: string
+  credits?: {
+    cast?: { name?: string; character?: string }[]
+  }
 }
 
 function claveTmdb(): string {
@@ -77,4 +87,24 @@ export async function buscarTitulos(consulta: string): Promise<ResultadoBusqueda
         sinopsis: item.overview?.trim() ?? "",
       }
     })
+}
+
+export async function obtenerDetalle(tipo: TipoContenido, tmdbId: number): Promise<FichaTmdb> {
+  const ruta = tipo === "serie" ? `/tv/${tmdbId}` : `/movie/${tmdbId}`
+  const datos = await pedir<RespuestaDetalle>(ruta, { append_to_response: "credits" })
+  const fecha = tipo === "serie" ? datos.first_air_date : datos.release_date
+  const nota = datos.vote_average
+
+  return {
+    sinopsis: datos.overview?.trim() ?? "",
+    calificacionOficial: typeof nota === "number" && nota > 0 ? nota : null,
+    anio: anioDe(fecha),
+    elenco: (datos.credits?.cast ?? [])
+      .filter((persona) => persona.name?.trim())
+      .slice(0, 8)
+      .map((persona) => ({
+        nombre: persona.name?.trim() ?? "",
+        personaje: persona.character?.trim() || "—",
+      })),
+  }
 }

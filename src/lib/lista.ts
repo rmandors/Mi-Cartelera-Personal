@@ -20,6 +20,15 @@ export async function listarColeccion(): Promise<{ datos: ItemLista[]; error: st
   return { datos: (data ?? []) as ItemLista[], error: null }
 }
 
+export async function obtenerTitulo(
+  id: number,
+): Promise<{ dato: ItemLista | null; error: string | null }> {
+  if (!supabase) return { dato: null, error: SIN_CONFIG }
+  const { data, error } = await supabase.from("mi_lista").select("*").eq("id", id).maybeSingle()
+  if (error) return { dato: null, error: error.message }
+  return { dato: (data as ItemLista | null) ?? null, error: null }
+}
+
 export async function agregarTitulo(entrada: NuevoTitulo): Promise<ResultadoMutacion> {
   if (!supabase) return { ok: false, error: SIN_CONFIG }
   const { error } = await supabase.from("mi_lista").insert({

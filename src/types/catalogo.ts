@@ -36,6 +36,18 @@ export interface ResultadoBusqueda {
   sinopsis: string
 }
 
+export interface PersonaElenco {
+  nombre: string
+  personaje: string
+}
+
+export interface FichaTmdb {
+  sinopsis: string
+  calificacionOficial: number | null
+  anio: string | null
+  elenco: PersonaElenco[]
+}
+
 export interface NuevoTitulo {
   tmdbId: number
   titulo: string
