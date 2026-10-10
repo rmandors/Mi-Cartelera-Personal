@@ -55,6 +55,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error: null, pendiente: false }
   }, [])
 
+  const actualizarPerfil = useCallback(async (perfil: { nombre: string; apellido: string }) => {
+    if (!supabase) return "Supabase no está configurado."
+    const { error } = await supabase.auth.updateUser({
+      data: metadatosPerfil(perfil.nombre, perfil.apellido),
+    })
+    return error ? mensajeAuth(error.message) : null
+  }, [])
 
 
   const cerrarSesion = useCallback(async () => {
@@ -69,9 +76,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       configurado: supabaseConfigurado,
       registrarse,
       iniciarSesion,
+      actualizarPerfil,
       cerrarSesion,
     }),
-    [session, cargando, registrarse, iniciarSesion, cerrarSesion],
+    [session, cargando, registrarse, iniciarSesion, actualizarPerfil, cerrarSesion],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
