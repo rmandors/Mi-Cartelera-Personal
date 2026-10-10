@@ -46,7 +46,7 @@ export function BarraApp({ correo, nombre, onSalir }: BarraAppProps) {
       <nav className="nav" aria-label="Secciones">
         <NavLink to="/" end className={({ isActive }) => (isActive ? "activo" : undefined)}>
           <Clapperboard size={16} strokeWidth={1.75} aria-hidden />
-          Inicio
+          Mi lista
         </NavLink>
         <NavLink to="/buscar" className={({ isActive }) => (isActive ? "activo" : undefined)}>
           <Search size={16} strokeWidth={1.75} aria-hidden />
