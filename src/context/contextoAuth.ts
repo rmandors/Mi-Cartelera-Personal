@@ -12,6 +12,7 @@ export interface AuthContextValue {
   ) => Promise<{ error: string | null; pendiente: boolean }>
   iniciarSesion: (correo: string, clave: string) => Promise<string | null>
   actualizarPerfil: (perfil: { nombre: string; apellido: string }) => Promise<string | null>
+  eliminarCuenta: () => Promise<string | null>
   cerrarSesion: () => Promise<void>
 }
 

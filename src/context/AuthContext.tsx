@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
-import { mensajeAuth } from "../lib/errores"
+import { mensajeAuth, mensajeBaja } from "../lib/errores"
 import { supabase, supabaseConfigurado } from "../lib/supabase"
 import { metadatosPerfil } from "../lib/texto"
 import { AuthContext, type AuthContextValue } from "./contextoAuth"
@@ -63,6 +63,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return error ? mensajeAuth(error.message) : null
   }, [])
 
+  const eliminarCuenta = useCallback(async () => {
+    if (!supabase) return "Supabase no está configurado."
+    const { error } = await supabase.rpc("eliminar_cuenta")
+    if (error) return mensajeBaja(error.message, error.code)
+    await supabase.auth.signOut({ scope: "local" })
+    return null
+  }, [])
 
   const cerrarSesion = useCallback(async () => {
     if (!supabase) return
@@ -77,9 +84,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       registrarse,
       iniciarSesion,
       actualizarPerfil,
+      eliminarCuenta,
       cerrarSesion,
     }),
-    [session, cargando, registrarse, iniciarSesion, actualizarPerfil, cerrarSesion],
+    [session, cargando, registrarse, iniciarSesion, actualizarPerfil, eliminarCuenta, cerrarSesion],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
