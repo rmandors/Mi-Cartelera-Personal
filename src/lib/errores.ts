@@ -12,3 +12,17 @@ export function mensajeAuth(mensaje: string): string {
   return mensaje
 }
 
+export function mensajeBaja(mensaje: string, codigo?: string): string {
+  const texto = mensaje.toLowerCase()
+  if (
+    codigo === "PGRST202" ||
+    texto.includes("could not find the function") ||
+    texto.includes("schema cache")
+  ) {
+    return "Para dar de baja, ejecuta de nuevo supabase/schema.sql en el SQL Editor."
+  }
+  if (texto.includes("permission denied")) {
+    return "Supabase no dejó borrar la cuenta. En el SQL Editor ejecuta: alter function public.eliminar_cuenta() owner to supabase_auth_admin;"
+  }
+  return mensajeAuth(mensaje)
+}

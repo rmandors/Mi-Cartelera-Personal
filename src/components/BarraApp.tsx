@@ -1,6 +1,6 @@
-import { ChevronDown, Clapperboard, Film, LogOut, Search } from "lucide-react"
+import { ChevronDown, Clapperboard, Film, LogOut, Search, Settings } from "lucide-react"
 import { useEffect, useId, useRef, useState } from "react"
-import { NavLink } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom"
 import { AvatarCine } from "./AvatarCine"
 
 interface BarraAppProps {
@@ -77,6 +77,15 @@ export function BarraApp({ correo, nombre, onSalir }: BarraAppProps) {
         </button>
         {abierto ? (
           <div className="perfil-menu" id={menuId} role="menu">
+            <Link
+              to="/ajustes"
+              className="perfil-opcion"
+              role="menuitem"
+              onClick={() => setAbierto(false)}
+            >
+              <Settings size={16} strokeWidth={1.75} aria-hidden />
+              Ajustes
+            </Link>
             <button type="button" className="perfil-salir" role="menuitem" onClick={onSalir}>
               <LogOut size={16} strokeWidth={1.75} aria-hidden />
               Salir
