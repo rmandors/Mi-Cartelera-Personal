@@ -12,10 +12,14 @@ export function AccesoMarco({ children }: AccesoMarcoProps) {
         <h1>
           Tu cartelera,
           <br />
-          <em>sin la de nadie más.</em>
+          <em>
+            sin la de
+            <br />
+            nadie más.
+          </em>
         </h1>
         <p className="acceso-texto">
-          Lo que quieres ver, lo que estás viendo y lo que ya viste. Cada cuenta guarda la suya.
+          Una butaca solo para ti. Lo que anotas aquí no se sienta en la fila de nadie más.
         </p>
       </section>
       <section className="acceso-formulario">{children}</section>
