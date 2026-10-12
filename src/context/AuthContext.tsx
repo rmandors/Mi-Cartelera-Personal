@@ -63,6 +63,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return error ? mensajeAuth(error.message) : null
   }, [])
 
+  const actualizarCorreo = useCallback(async (correo: string) => {
+    if (!supabase) return { error: "Supabase no está configurado.", pendiente: false }
+    const { data, error } = await supabase.auth.updateUser({ email: correo })
+    if (error) return { error: mensajeAuth(error.message), pendiente: false }
+    const pendiente = data.user?.email !== correo
+    return { error: null, pendiente }
+  }, [])
+
+  const actualizarClave = useCallback(async (clave: string) => {
+    if (!supabase) return "Supabase no está configurado."
+    const { error } = await supabase.auth.updateUser({ password: clave })
+    return error ? mensajeAuth(error.message) : null
+  }, [])
+
   const eliminarCuenta = useCallback(async () => {
     if (!supabase) return "Supabase no está configurado."
     const { error } = await supabase.rpc("eliminar_cuenta")
@@ -84,10 +98,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       registrarse,
       iniciarSesion,
       actualizarPerfil,
+      actualizarCorreo,
+      actualizarClave,
       eliminarCuenta,
       cerrarSesion,
     }),
-    [session, cargando, registrarse, iniciarSesion, actualizarPerfil, eliminarCuenta, cerrarSesion],
+    [
+      session,
+      cargando,
+      registrarse,
+      iniciarSesion,
+      actualizarPerfil,
+      actualizarCorreo,
+      actualizarClave,
+      eliminarCuenta,
+      cerrarSesion,
+    ],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>

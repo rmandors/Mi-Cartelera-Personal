@@ -8,10 +8,14 @@ import { useTitulo } from "../hooks/useTitulo"
 import { textoMeta } from "../lib/texto"
 
 export function Ajustes() {
-  const { session, actualizarPerfil, eliminarCuenta } = useAuth()
+  const { session, actualizarPerfil, actualizarCorreo, actualizarClave, eliminarCuenta } = useAuth()
   const metadata = session?.user.user_metadata
+  const correoActual = session?.user.email ?? ""
   const [nombre, setNombre] = useState(() => textoMeta(metadata, "nombre"))
   const [apellido, setApellido] = useState(() => textoMeta(metadata, "apellido"))
+  const [correo, setCorreo] = useState(correoActual)
+  const [clave, setClave] = useState("")
+  const [confirmacion, setConfirmacion] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -22,24 +26,71 @@ export function Ajustes() {
 
   async function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    const nuevoCorreo = correo.trim()
+    const quiereClave = clave.length > 0 || confirmacion.length > 0
     if (!nombre.trim()) {
       setAviso(null)
       setError("Escribe tu nombre.")
       return
     }
+    if (!nuevoCorreo.includes("@")) {
+      setAviso(null)
+      setError("Escribe un correo válido.")
+      return
+    }
+    if (quiereClave && clave.length < 6) {
+      setAviso(null)
+      setError("La contraseña debe tener al menos 6 caracteres.")
+      return
+    }
+    if (quiereClave && clave !== confirmacion) {
+      setAviso(null)
+      setError("Las contraseñas no coinciden.")
+      return
+    }
+
     setError(null)
     setAviso(null)
     setGuardando(true)
-    const mensaje = await actualizarPerfil({
+
+    const falloPerfil = await actualizarPerfil({
       nombre: nombre.trim(),
       apellido: apellido.trim(),
     })
-    setGuardando(false)
-    if (mensaje) {
-      setError(mensaje)
+    if (falloPerfil) {
+      setGuardando(false)
+      setError(falloPerfil)
       return
     }
-    setAviso("Cambios guardados éxitosamente.")
+
+    let correoPendiente = false
+    if (nuevoCorreo !== correoActual) {
+      const resultado = await actualizarCorreo(nuevoCorreo)
+      if (resultado.error) {
+        setGuardando(false)
+        setError(resultado.error)
+        return
+      }
+      correoPendiente = resultado.pendiente
+    }
+
+    if (quiereClave) {
+      const falloClave = await actualizarClave(clave)
+      if (falloClave) {
+        setGuardando(false)
+        setError(falloClave)
+        return
+      }
+      setClave("")
+      setConfirmacion("")
+    }
+
+    setGuardando(false)
+    setAviso(
+      correoPendiente
+        ? "Cambios guardados. Revisa el correo nuevo para confirmarlo."
+        : "Cambios guardados éxitosamente.",
+    )
   }
 
   async function darDeBaja() {
@@ -82,6 +133,34 @@ export function Ajustes() {
             placeholder="Ej. Ruiz"
           />
         </div>
+        <Campo
+          id="ajustes-correo"
+          etiqueta="Correo"
+          tipo="email"
+          valor={correo}
+          onChange={setCorreo}
+          autoComplete="email"
+          placeholder="ana@correo.com"
+        />
+        <Campo
+          id="ajustes-clave"
+          etiqueta="Nueva contraseña"
+          nota="(opcional)"
+          tipo="password"
+          valor={clave}
+          onChange={setClave}
+          autoComplete="new-password"
+          placeholder="Mínimo 6 caracteres"
+        />
+        <Campo
+          id="ajustes-confirmacion"
+          etiqueta="Confirmar contraseña"
+          tipo="password"
+          valor={confirmacion}
+          onChange={setConfirmacion}
+          autoComplete="new-password"
+          placeholder="Repite la contraseña nueva"
+        />
         <div className="guardar-bloque">
           <button className="boton linea" type="submit" disabled={guardando || borrando}>
             <Save size={16} strokeWidth={1.75} aria-hidden />
@@ -105,7 +184,7 @@ export function Ajustes() {
             setErrorBaja(null)
             setConfirmarBaja(true)
           }}
-          disabled={borrando}
+          disabled={guardando || borrando}
         >
           <Trash2 size={16} strokeWidth={1.75} aria-hidden />
           Eliminar la cuenta

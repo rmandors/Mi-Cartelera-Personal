@@ -4,6 +4,15 @@ export function mensajeAuth(mensaje: string): string {
   if (texto.includes("already registered") || texto.includes("already been registered")) {
     return "Ese correo ya está registrado."
   }
+  if (texto.includes("reauthentication") || texto.includes("reauthenticate")) {
+    return "Por seguridad, cierra sesión, vuelve a entrar y cambia la contraseña enseguida."
+  }
+  if (texto.includes("different from the old")) {
+    return "Elige una contraseña distinta a la actual."
+  }
+  if (texto.includes("unable to validate email") || texto.includes("invalid format")) {
+    return "Escribe un correo válido."
+  }
   if (texto.includes("password")) return "La contraseña debe tener al menos 6 caracteres."
   if (texto.includes("rate limit")) return "Demasiados intentos. Espera un momento."
   if (texto.includes("failed to fetch") || texto.includes("network")) {

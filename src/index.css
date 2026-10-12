@@ -613,7 +613,8 @@ select {
 }
 
 .ajustes-bloque .aviso,
-.ajustes-bloque .campos-par {
+.ajustes-bloque .campos-par,
+.ajustes-bloque .campo {
   width: 100%;
 }
 
