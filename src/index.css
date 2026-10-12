@@ -347,9 +347,15 @@ select {
 }
 
 .volver {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 18px;
+  border: 0;
+  padding: 0;
+  background: none;
   color: var(--muted);
+  font-size: 0.92rem;
   text-decoration: none;
 }
 
@@ -598,10 +604,28 @@ select {
 }
 
 .ajustes {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  max-width: 560px;
+  --holgura: max(0px, min(50px, (100vw - min(1080px, 100vw - 32px)) / 2 - 28px));
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: calc(18px + var(--holgura));
+  row-gap: 28px;
+  align-items: start;
+  max-width: calc(560px + var(--holgura));
+  margin-left: calc(-1 * var(--holgura));
+}
+
+.ajustes .volver {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.ajustes .encabezado,
+.ajustes .ajustes-bloque,
+.ajustes .ajustes-baja {
+  grid-column: 2;
 }
 
 .ajustes-bloque,

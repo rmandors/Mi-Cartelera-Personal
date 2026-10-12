@@ -1,5 +1,6 @@
-import { Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Trash2 } from "lucide-react"
 import { useState, type FormEvent } from "react"
+import { useNavigate } from "react-router-dom"
 import { Aviso } from "../components/Aviso"
 import { Campo } from "../components/Campo"
 import { Dialogo } from "../components/Dialogo"
@@ -22,7 +23,14 @@ export function Ajustes() {
   const [confirmarBaja, setConfirmarBaja] = useState(false)
   const [errorBaja, setErrorBaja] = useState<string | null>(null)
   const [borrando, setBorrando] = useState(false)
+  const navigate = useNavigate()
   useTitulo("Ajustes")
+
+  function volver() {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0
+    if (idx > 0) navigate(-1)
+    else navigate("/")
+  }
 
   async function guardar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
@@ -105,6 +113,10 @@ export function Ajustes() {
 
   return (
     <section className="pagina ajustes">
+      <button type="button" className="volver" onClick={volver}>
+        <ArrowLeft size={16} strokeWidth={1.75} aria-hidden />
+        Atrás
+      </button>
       <header className="encabezado">
         <p className="kicker">Cuenta</p>
         <h2>Mis Ajustes</h2>
