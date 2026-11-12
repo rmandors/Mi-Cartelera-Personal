@@ -12,3 +12,4 @@ React 19, TypeScript estricto, Vite, React Router 7, Supabase y TMDB v3. Comando
 - Claves solo en `.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_TMDB_API_KEY`. No se commitean. Nunca uses la clave `service_role`.
 - Estilos según `DESIGN.md` y `src/index.css`. No agregues Bootstrap ni colores fuera de los tokens.
 - Un commit por ticket, con el id en el mensaje. Usa `/commit`.
+- Antes de cada commit, el subagente `revisor` mira el diff. Si hay un bloqueo, no se commitea.
