@@ -11,9 +11,11 @@ import { NocheDePelicula } from "./pages/NocheDePelicula"
 import { Registro } from "./pages/Registro"
 import { SesionGuardada } from "./pages/SesionGuardada"
 
+const basePublica = import.meta.env.BASE_URL.replace(/\/$/, "")
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basePublica || undefined}>
       <AuthProvider>
         <Routes>
           <Route element={<SoloInvitados />}>

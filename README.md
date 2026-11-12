@@ -29,10 +29,10 @@ Mi-Cartelera-Personal/
 │   ├── lib/                 // Supabase, TMDB y la lista
 │   ├── pages/               // una pantalla por ruta
 │   ├── types/               // tipos del catálogo
-│   ├── App.tsx             
-│   ├── main.tsx             
-│   ├── index.css            
-│   └── vite-env.d.ts        
+│   ├── App.tsx
+│   ├── main.tsx
+│   ├── index.css
+│   └── vite-env.d.ts
 ├── index.html
 ├── package.json
 ├── vite.config.ts
@@ -57,11 +57,11 @@ VITE_SUPABASE_ANON_KEY=
 VITE_TMDB_API_KEY=
 ```
 
-| Variable | Dónde se obtiene |
-| --- | --- |
-| `VITE_SUPABASE_URL` | Project Settings → API, en tu proyecto de Supabase |
-| `VITE_SUPABASE_ANON_KEY` | La clave `anon` / `public` del mismo lugar. No uses la `service_role` |
-| `VITE_TMDB_API_KEY` | API Key v3 en [themoviedb.org](https://www.themoviedb.org/settings/api) |
+| Variable                 | Dónde se obtiene                                                        |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Project Settings → API, en tu proyecto de Supabase                      |
+| `VITE_SUPABASE_ANON_KEY` | La clave `anon` / `public` del mismo lugar. No uses la `service_role`   |
+| `VITE_TMDB_API_KEY`      | API Key v3 en [themoviedb.org](https://www.themoviedb.org/settings/api) |
 
 En una app de Vite estas variables viajan en el JavaScript del navegador. La clave `anon` está pensada para eso. Quien protege los datos es Row Level Security.
 
@@ -75,7 +75,7 @@ Los tests de la regla de Noche de película:
 npm test
 ```
 
-Antes de guardar una noche en una base nueva, ejecuta `supabase/migrations/20261111_noche_de_pelicula.sql` en el SQL Editor de Supabase. Si el proyecto está en pausa, restáuralo primero.
+Antes de guardar una noche en una base nueva, ejecuta en el SQL Editor, en este orden, `supabase/migrations/20261111_noche_de_pelicula.sql` y `supabase/migrations/20261112_noche_opcionales.sql`. Si el proyecto está en pausa, restáuralo primero.
 
 ## Noche de película
 
@@ -83,11 +83,17 @@ Con la sesión iniciada, Noche pregunta cuántos minutos libres tienes (un enter
 
 La sesión se guarda con nombre. No cambia el estado de las películas. Se puede consultar o borrar, no editar. Si quitas de tu lista una película que ya estaba en una noche, la noche conserva el título y la duración y avisa que ya no está en la lista.
 
-La regla vive en `src/dominio/noche.ts` y no llama a la red. TMDB entra solo por `src/lib/tmdb.ts` (`obtenerDuracion`). Supabase entra solo por `src/lib/sesiones.ts`.
+La regla vive en `src/dominio/noche.ts` y no llama a la red. TMDB entra solo por `src/lib/tmdb.ts` (`obtenerDuracion` y `obtenerFichaNoche`). Supabase entra solo por `src/lib/sesiones.ts`.
+
+En Noche también se puede filtrar por género, pedir «Llenar la noche» y, en una sesión ya guardada, marcar «Ya la vi». Ese último gesto pasa a vista las películas que sigan en la lista. Guardar, por sí solo, no cambia el estado. La base rechaza una noche cuya suma, con las pausas, supere el tiempo.
+
+La app publicada: https://rmandors.github.io/Mi-Cartelera-Personal/
 
 ## Harness
 
-El agente lee `AGENTS.md`. `CLAUDE.md` importa ese archivo. La skill `/commit` está en `.claude/skills/commit/SKILL.md` y no se invoca sola (`disable-model-invocation`). Después de escribir o editar un archivo, el hook `PostToolUse` de `.claude/settings.json` corre `.claude/hooks/formatear.sh`, que formatea ese archivo con Prettier. La configuración es `.prettierrc`.
+El agente lee `AGENTS.md`. `CLAUDE.md` importa ese archivo. La skill `/commit` está en `.claude/skills/commit/SKILL.md` y no se invoca sola (`disable-model-invocation`). Antes del commit invoca al subagente `.claude/agents/revisor.md`. Si no hay bloqueo, deja `.git/REVISOR_OK`; el hook `PreToolUse` niega el `git commit` del agente sin esa marca. Un commit escrito a mano en la terminal no pasa por ese hook. Después de escribir o editar un archivo, el hook `PostToolUse` corre `.claude/hooks/formatear.sh`, que formatea ese archivo con Prettier. La configuración es `.prettierrc`.
+
+GitHub Pages se construye con `.github/workflows/pages.yml`. Las claves van en los secretos del repositorio, no en el código.
 
 Ninguna funcionalidad nueva entra sin spec en `docs/specs/`. El orden de esta entrega está en el historial: harness, estado inicial, diseño, PRD, backlog, spec y, después, un commit por ticket.
 
