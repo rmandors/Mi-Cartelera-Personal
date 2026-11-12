@@ -35,7 +35,7 @@ Fecha de la revisión: 11 de noviembre de 2026. Cada criterio queda en cumple, n
 | CA-25 | cumple | Guardar «Prueba vista» avisó que las películas siguen por ver. «Ya la vi» la marcó realizada y Toy Story 5 pasó a Vista. El detalle no ofreció editar el plan. Se devolvió la película a Por ver y se borró la noche. V-26. |
 | CA-26 | cumple | El check `sesiones_total_cabe` rechazó un total de 100 en 30 min. El disparador rechazó una película de 200 min en un tiempo de 120. «Prueba vista», que sí cabía, se guardó desde la pantalla. V-27. |
 | CA-27 | cumple | Están `.claude/agents/revisor.md`, la skill `/commit` y `.claude/hooks/exigir-revisor.sh`. Con `CLAUDE_PROJECT_DIR` definido, un `git commit` sin `.git/REVISOR_OK` sale con código 2. Con la marca, el hook la consume y deja pasar. Sin esa variable, un commit de la terminal no se frena. |
-| CA-28 | sin verificar | El flujo está en `.github/workflows/pages.yml` y el README apunta a `https://rmandors.github.io/Mi-Cartelera-Personal/`. El enlace todavía no está publicado: faltan el push, los secretos y activar Pages. |
+| CA-28 | cumple | `https://rmandors.github.io/Mi-Cartelera-Personal/` abre la app. Sin sesión llega a Entrar. Con la cuenta de prueba, Mi lista cargó. Abrir y recargar `/noche` mostró Noche de película. El paquete publicado incluye el host de Supabase y TMDB, y no incluye `service_role`. |
 
 ## Diseño
 
@@ -57,5 +57,4 @@ Al revisar el guardado, el `grant` de la tabla no alcanza para que el identity a
 ## Pendiente, con razón
 
 - La deuda de `docs/ESTADO-INICIAL.md` sigue abierta a propósito: no hay esquema del Proyecto 3 en git, no se movió `AuthContext` a `src/lib`, y el README conserva la contraseña de demostración. No son parte de E2.
-- Publicar la app (CA-28) sigue pendiente: el flujo y la dirección están escritos, y el enlace no responde todavía.
 - La cuenta `noche.b.hw04@gmail.com` quedó creada y vacía. `public.eliminar_cuenta` no está en el esquema, así que no se pudo dar de baja desde la app.
