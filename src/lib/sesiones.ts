@@ -1,4 +1,5 @@
 import { validarNombre } from "../dominio/noche"
+import { actualizarTitulo } from "./lista"
 import { supabase } from "./supabase"
 
 const SIN_CONFIG = "Supabase no está configurado. Revisa .env."
@@ -22,6 +23,7 @@ export interface SesionGuardada {
   tiempoDisponible: number
   duracionTotal: number
   creadaEn: string
+  realizada: boolean
   peliculas: PeliculaGuardada[]
 }
 
@@ -63,11 +65,12 @@ interface FilaSesion {
   tiempo_disponible: number
   duracion_total: number
   creada_en: string
+  realizada?: boolean | null
   sesion_peliculas?: FilaPelicula[] | null
 }
 
 const SELECCION =
-  "id, nombre, tiempo_disponible, duracion_total, creada_en, sesion_peliculas(id, mi_lista_id, tmdb_id, titulo, poster_url, duracion, posicion)"
+  "id, nombre, tiempo_disponible, duracion_total, creada_en, realizada, sesion_peliculas(id, mi_lista_id, tmdb_id, titulo, poster_url, duracion, posicion)"
 
 export async function listarSesiones(): Promise<{ datos: SesionGuardada[]; error: string | null }> {
   if (!supabase) return { datos: [], error: SIN_CONFIG }
@@ -126,7 +129,7 @@ export async function guardarSesion(entrada: NuevaSesion): Promise<ResultadoGuar
       tiempo_disponible: entrada.tiempoDisponible,
       duracion_total: entrada.duracionTotal,
     })
-    .select("id, nombre, tiempo_disponible, duracion_total, creada_en")
+    .select("id, nombre, tiempo_disponible, duracion_total, creada_en, realizada")
     .single()
 
   if (error || !data) {
@@ -169,6 +172,31 @@ export async function guardarSesion(entrada: NuevaSesion): Promise<ResultadoGuar
   }
 }
 
+export async function marcarRealizada(
+  sesion: SesionGuardada,
+): Promise<{ ok: boolean; error: string | null; omitidas: string[] }> {
+  if (!supabase) return { ok: false, error: SIN_CONFIG, omitidas: [] }
+  if (sesion.realizada) {
+    return { ok: false, error: "Esta noche ya está realizada.", omitidas: [] }
+  }
+
+  const omitidas: string[] = []
+  for (const pelicula of sesion.peliculas) {
+    if (pelicula.miListaId == null) {
+      omitidas.push(pelicula.titulo)
+      continue
+    }
+    const resultado = await actualizarTitulo(pelicula.miListaId, { estado: "vista" })
+    if (!resultado.ok) {
+      return { ok: false, error: resultado.error, omitidas }
+    }
+  }
+
+  const { error } = await supabase.from("sesiones").update({ realizada: true }).eq("id", sesion.id)
+  if (error) return { ok: false, error: error.message, omitidas }
+  return { ok: true, error: null, omitidas }
+}
+
 export async function eliminarSesion(id: number): Promise<{ ok: boolean; error: string | null }> {
   if (!supabase) return { ok: false, error: SIN_CONFIG }
   const { error } = await supabase.from("sesiones").delete().eq("id", id)
@@ -195,6 +223,7 @@ function aSesion(fila: FilaSesion): SesionGuardada {
     tiempoDisponible: fila.tiempo_disponible,
     duracionTotal: fila.duracion_total,
     creadaEn: fila.creada_en,
+    realizada: fila.realizada === true,
     peliculas,
   }
 }

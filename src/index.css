@@ -1208,6 +1208,12 @@ select {
   margin-top: 22px;
 }
 
+.noche-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .noche-grupo h2 {
   margin-bottom: 12px;
 }

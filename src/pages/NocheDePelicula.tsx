@@ -447,7 +447,10 @@ export function NocheDePelicula() {
                   />
                 </Link>
                 <div className="ticket-cuerpo">
-                  <p className="kicker">{fechaCorta(sesion.creadaEn)}</p>
+                  <p className="kicker">
+                    {fechaCorta(sesion.creadaEn)}
+                    {sesion.realizada ? " · Realizada" : ""}
+                  </p>
                   <h2>
                     <Link to={`/noche/${sesion.id}`}>{sesion.nombre}</Link>
                   </h2>

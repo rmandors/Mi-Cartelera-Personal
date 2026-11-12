@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react"
+import { Check, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { Aviso } from "../components/Aviso"
@@ -6,7 +6,12 @@ import { Dialogo } from "../components/Dialogo"
 import { EstadoCarga } from "../components/EstadoCarga"
 import { Poster } from "../components/Poster"
 import { useTitulo } from "../hooks/useTitulo"
-import { eliminarSesion, obtenerSesion, type SesionGuardada as Sesion } from "../lib/sesiones"
+import {
+  eliminarSesion,
+  marcarRealizada,
+  obtenerSesion,
+  type SesionGuardada as Sesion,
+} from "../lib/sesiones"
 import { fechaCorta } from "../lib/texto"
 
 export function SesionGuardada() {
@@ -20,6 +25,10 @@ export function SesionGuardada() {
   const [confirmar, setConfirmar] = useState(false)
   const [borrando, setBorrando] = useState(false)
   const [errorBorrar, setErrorBorrar] = useState<string | null>(null)
+  const [confirmarVista, setConfirmarVista] = useState(false)
+  const [marcando, setMarcando] = useState(false)
+  const [errorMarcar, setErrorMarcar] = useState<string | null>(null)
+  const [avisoRealizada, setAvisoRealizada] = useState<string | null>(null)
   useTitulo(sesion?.nombre ?? "Noche guardada")
 
   useEffect(() => {
@@ -35,6 +44,25 @@ export function SesionGuardada() {
       activo = false
     }
   }, [id, idValido])
+
+  async function marcar() {
+    if (!sesion) return
+    setMarcando(true)
+    setErrorMarcar(null)
+    const resultado = await marcarRealizada(sesion)
+    setMarcando(false)
+    if (!resultado.ok) {
+      setErrorMarcar(resultado.error)
+      return
+    }
+    setSesion({ ...sesion, realizada: true })
+    setConfirmarVista(false)
+    setAvisoRealizada(
+      resultado.omitidas.length > 0
+        ? `La noche quedó realizada. Estas ya no estaban en tu lista: ${resultado.omitidas.join(", ")}.`
+        : "La noche quedó realizada. Esas películas pasaron a vista.",
+    )
+  }
 
   async function borrar() {
     if (!sesion) return
@@ -74,7 +102,9 @@ export function SesionGuardada() {
           <p className="programa">
             {fechaCorta(sesion.creadaEn)} · {sesion.tiempoDisponible} min disponibles ·{" "}
             {sesion.duracionTotal} min en total
+            {sesion.realizada ? " · Realizada" : ""}
           </p>
+          {avisoRealizada ? <Aviso tono="ok">{avisoRealizada}</Aviso> : null}
           <div className="boletos">
             {sesion.peliculas.map((pelicula) => (
               <article className="ticket" key={pelicula.id}>
@@ -94,7 +124,13 @@ export function SesionGuardada() {
               </article>
             ))}
           </div>
-          <div className="noche-grupo">
+          <div className="noche-grupo noche-acciones">
+            {sesion.realizada ? null : (
+              <button className="boton" type="button" onClick={() => setConfirmarVista(true)}>
+                <Check size={16} strokeWidth={1.75} aria-hidden />
+                Ya la vi
+              </button>
+            )}
             <button className="boton peligro" type="button" onClick={() => setConfirmar(true)}>
               <Trash2 size={16} strokeWidth={1.75} aria-hidden />
               Borrar sesión
@@ -110,6 +146,18 @@ export function SesionGuardada() {
             onConfirmar={() => void borrar()}
             onCerrar={() => {
               if (!borrando) setConfirmar(false)
+            }}
+          />
+          <Dialogo
+            abierto={confirmarVista}
+            titulo="Marcar como realizada"
+            texto={`¿Marcar «${sesion.nombre}» como realizada? Las que sigan en tu lista pasan a vista.`}
+            confirmar={marcando ? "Marcando…" : "Ya la vi"}
+            ocupado={marcando}
+            error={errorMarcar}
+            onConfirmar={() => void marcar()}
+            onCerrar={() => {
+              if (!marcando) setConfirmarVista(false)
             }}
           />
         </>
