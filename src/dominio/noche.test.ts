@@ -4,6 +4,7 @@ import {
   cabe,
   duracionTotal,
   evaluarAgregado,
+  filtrarPorGenero,
   llenarNoche,
   peliculasQueCaben,
   validarNombre,
@@ -201,6 +202,27 @@ describe("llenarNoche", () => {
   it("rechaza un tiempo inválido sin armar nada", () => {
     expect(llenarNoche(29, [pelicula(1, "Corta", 20)], PAUSA_MINUTOS)).toEqual([])
     expect(llenarNoche(60, [], PAUSA_MINUTOS)).toEqual([])
+  })
+})
+
+describe("filtrarPorGenero", () => {
+  const candidata = (id: number, titulo: string, generos: string[]) => ({
+    id,
+    titulo,
+    duracion: 90,
+    generos,
+  })
+
+  it("deja solo el género elegido y Todos devuelve todas", () => {
+    const lista = [
+      candidata(1, "Drama", ["Drama"]),
+      candidata(2, "Mixta", ["Drama", "Comedia"]),
+      candidata(3, "Risa", ["Comedia"]),
+      candidata(4, "Sin género", []),
+    ]
+    expect(filtrarPorGenero(lista, "Comedia").map((item) => item.titulo)).toEqual(["Mixta", "Risa"])
+    expect(filtrarPorGenero(lista, null)).toHaveLength(4)
+    expect(filtrarPorGenero(lista, "   ")).toHaveLength(4)
   })
 })
 

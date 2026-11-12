@@ -13,6 +13,7 @@ import {
   cabe,
   duracionTotal,
   evaluarAgregado,
+  filtrarPorGenero,
   llenarNoche,
   peliculasQueCaben,
   validarNombre,
@@ -62,6 +63,7 @@ export function NocheDePelicula() {
   const [cargandoLista, setCargandoLista] = useState(true)
   const [errorLista, setErrorLista] = useState<string | null>(null)
   const [tiempoTexto, setTiempoTexto] = useState("")
+  const [genero, setGenero] = useState<string | null>(null)
   const [tiempo, setTiempo] = useState<number | null>(null)
   const [errorTiempo, setErrorTiempo] = useState<string | null>(null)
   const [elegidas, setElegidas] = useState<ElegidaNoche[]>([])
@@ -168,7 +170,7 @@ export function NocheDePelicula() {
 
   function llenar() {
     if (tiempo === null) return
-    const propuesta = llenarNoche(tiempo, candidatas, PAUSA_MINUTOS)
+    const propuesta = llenarNoche(tiempo, filtrarPorGenero(candidatas, genero), PAUSA_MINUTOS)
     if (propuesta.length === 0) {
       setAvisoTono("error")
       setAvisoId(null)
@@ -280,10 +282,15 @@ export function NocheDePelicula() {
     id: item.id,
     titulo: item.titulo,
     duracion: duraciones.porId[item.tmdb_id]?.minutos ?? null,
+    generos: duraciones.porId[item.tmdb_id]?.generos ?? [],
   }))
+  const generos = [...new Set(candidatas.flatMap((candidata) => candidata.generos ?? []))].sort(
+    (a, b) => a.localeCompare(b, "es"),
+  )
+  const visibles = filtrarPorGenero(candidatas, genero)
   const clasificacion =
     tiempo !== null && !duraciones.cargando
-      ? peliculasQueCaben(tiempo, candidatas, PAUSA_MINUTOS)
+      ? peliculasQueCaben(tiempo, visibles, PAUSA_MINUTOS)
       : null
 
   return (
@@ -329,6 +336,27 @@ export function NocheDePelicula() {
         <div className="noche-columnas con-resumen">
           <div>
             {duraciones.cargando ? <EstadoCarga mensaje="Consultando duraciones…" /> : null}
+            {clasificacion && generos.length > 0 ? (
+              <div className="filtros" role="group" aria-label="Filtrar por género">
+                <button
+                  type="button"
+                  className={genero === null ? "activo" : undefined}
+                  onClick={() => setGenero(null)}
+                >
+                  Todos
+                </button>
+                {generos.map((nombre) => (
+                  <button
+                    key={nombre}
+                    type="button"
+                    className={genero === nombre ? "activo" : undefined}
+                    onClick={() => setGenero(nombre)}
+                  >
+                    {nombre}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {clasificacion ? (
               <div className="noche-grupo">
                 <h2>Caben</h2>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { obtenerDuracion } from "../lib/tmdb"
+import { obtenerFichaNoche } from "../lib/tmdb"
 
 export interface DuracionConsultada {
   minutos: number | null
+  generos: string[]
   error: string | null
 }
 
@@ -25,12 +26,12 @@ export function useDuraciones(ids: readonly number[], activo: boolean) {
     void Promise.all(
       lista.map(async (id) => {
         try {
-          const minutos = await obtenerDuracion(id)
-          return [id, { minutos, error: null }] as const
+          const ficha = await obtenerFichaNoche(id)
+          return [id, { minutos: ficha.minutos, generos: ficha.generos, error: null }] as const
         } catch (fallo) {
           const error =
             fallo instanceof Error ? fallo.message : "TMDB no respondió. Intenta de nuevo."
-          return [id, { minutos: null, error }] as const
+          return [id, { minutos: null, generos: [], error }] as const
         }
       }),
     ).then((pares) => {

@@ -33,6 +33,7 @@ export interface Candidata {
   id: number
   titulo: string
   duracion: number | null
+  generos?: readonly string[]
 }
 
 export type MotivoNoDisponible = "sin_duracion" | "no_cabe_sola"
@@ -160,6 +161,15 @@ export function peliculasQueCaben(
   })
 
   return { caben, noDisponibles }
+}
+
+export function filtrarPorGenero(
+  candidatas: readonly Candidata[],
+  genero: string | null,
+): Candidata[] {
+  const elegido = genero?.trim() ?? ""
+  if (elegido === "") return [...candidatas]
+  return candidatas.filter((candidata) => (candidata.generos ?? []).includes(elegido))
 }
 
 const TOPE_BUSQUEDA = 18

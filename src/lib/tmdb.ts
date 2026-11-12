@@ -1,7 +1,7 @@
 import type { FichaTmdb, ResultadoBusqueda, TipoContenido } from "../types/catalogo"
 
 const BASE = "https://api.themoviedb.org/3"
-const duracionesConocidas = new Map<number, number | null>()
+const fichasNoche = new Map<number, FichaNoche>()
 
 interface CrudoBusqueda {
   id: number
@@ -20,6 +20,12 @@ interface RespuestaBusqueda {
 
 interface RespuestaRuntime {
   runtime?: number | null
+  genres?: { name?: string }[]
+}
+
+interface FichaNoche {
+  minutos: number | null
+  generos: string[]
 }
 
 interface RespuestaDetalle {
@@ -71,14 +77,25 @@ function anioDe(fecha?: string): string | null {
   return fecha.slice(0, 4)
 }
 
-export async function obtenerDuracion(tmdbId: number): Promise<number | null> {
-  if (duracionesConocidas.has(tmdbId)) return duracionesConocidas.get(tmdbId) ?? null
+export async function obtenerFichaNoche(tmdbId: number): Promise<FichaNoche> {
+  const previa = fichasNoche.get(tmdbId)
+  if (previa) return previa
 
   const datos = await pedir<RespuestaRuntime>(`/movie/${tmdbId}`, {})
   const runtime = datos.runtime
-  const minutos = typeof runtime === "number" && runtime > 0 ? Math.trunc(runtime) : null
-  duracionesConocidas.set(tmdbId, minutos)
-  return minutos
+  const ficha = {
+    minutos: typeof runtime === "number" && runtime > 0 ? Math.trunc(runtime) : null,
+    generos: (datos.genres ?? [])
+      .map((genero) => genero.name?.trim() ?? "")
+      .filter((nombre) => nombre !== ""),
+  }
+  fichasNoche.set(tmdbId, ficha)
+  return ficha
+}
+
+export async function obtenerDuracion(tmdbId: number): Promise<number | null> {
+  const ficha = await obtenerFichaNoche(tmdbId)
+  return ficha.minutos
 }
 
 export async function buscarTitulos(consulta: string): Promise<ResultadoBusqueda[]> {
