@@ -77,6 +77,8 @@ revoke all on public.sesiones from anon;
 revoke all on public.sesion_peliculas from anon;
 grant select, insert, delete on public.sesiones to authenticated;
 grant select, insert, delete on public.sesion_peliculas to authenticated;
+grant usage, select on sequence public.sesiones_id_seq to authenticated;
+grant usage, select on sequence public.sesion_peliculas_id_seq to authenticated;
 
 drop policy if exists sesiones_select on public.sesiones;
 create policy sesiones_select on public.sesiones
@@ -126,7 +128,7 @@ create policy sesion_peliculas_delete on public.sesion_peliculas
   using (user_id = auth.uid());
 ```
 
-No hay política de `update` ni permiso de actualización. Una sesión guardada no se edita.
+No hay política de `update` ni permiso de actualización. Una sesión guardada no se edita. El `grant` de `sesiones_id_seq` y `sesion_peliculas_id_seq` permite que el identity asigne el id al insertar; sin eso el guardado falla aunque la política deje pasar la fila.
 
 El cliente no envía `user_id`. Lo pone el `default` y lo exige la política. Borrar una sesión borra sus películas por la cascada.
 
