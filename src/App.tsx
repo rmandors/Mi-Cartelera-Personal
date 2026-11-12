@@ -7,6 +7,7 @@ import { Buscar } from "./pages/Buscar"
 import { Detalle } from "./pages/Detalle"
 import { Login } from "./pages/Login"
 import { MiLista } from "./pages/MiLista"
+import { NocheDePelicula } from "./pages/NocheDePelicula"
 import { Registro } from "./pages/Registro"
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
             <Route element={<MarcoApp />}>
               <Route path="/" element={<MiLista />} />
               <Route path="/buscar" element={<Buscar />} />
+              <Route path="/noche" element={<NocheDePelicula />} />
               <Route path="/titulo/:id" element={<Detalle />} />
               <Route path="/ajustes" element={<Ajustes />} />
             </Route>

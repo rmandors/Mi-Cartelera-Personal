@@ -1,4 +1,4 @@
-import { ChevronDown, Clapperboard, Film, LogOut, Search, Settings } from "lucide-react"
+import { ChevronDown, Clapperboard, Clock, Film, LogOut, Search, Settings } from "lucide-react"
 import { useEffect, useId, useRef, useState } from "react"
 import { Link, NavLink } from "react-router-dom"
 import { AvatarCine } from "./AvatarCine"
@@ -51,6 +51,10 @@ export function BarraApp({ correo, nombre, onSalir }: BarraAppProps) {
         <NavLink to="/buscar" className={({ isActive }) => (isActive ? "activo" : undefined)}>
           <Search size={16} strokeWidth={1.75} aria-hidden />
           Buscar
+        </NavLink>
+        <NavLink to="/noche" className={({ isActive }) => (isActive ? "activo" : undefined)}>
+          <Clock size={16} strokeWidth={1.75} aria-hidden />
+          Noche
         </NavLink>
       </nav>
       <div className="sesion" ref={perfilRef}>

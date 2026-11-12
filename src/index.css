@@ -29,9 +29,7 @@
 body {
   margin: 0;
   min-height: 100svh;
-  background:
-    radial-gradient(ellipse at top, rgba(226, 162, 58, 0.09), transparent 46%),
-    var(--bg);
+  background: radial-gradient(ellipse at top, rgba(226, 162, 58, 0.09), transparent 46%), var(--bg);
 }
 
 #root {
@@ -139,7 +137,11 @@ select {
   padding: 0 12px;
   min-height: var(--control);
   cursor: pointer;
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, filter 120ms ease;
+  transition:
+    transform 120ms ease,
+    background 120ms ease,
+    border-color 120ms ease,
+    filter 120ms ease;
 }
 
 .boton:hover:not(:disabled):not(.linea):not(.peligro) {
@@ -282,7 +284,13 @@ select {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
   background:
-    linear-gradient(105deg, rgba(20, 17, 14, 0.58) 0%, rgba(20, 17, 14, 0.46) 36%, rgba(20, 17, 14, 0.94) 56%, rgba(12, 10, 8, 0.97) 100%),
+    linear-gradient(
+      105deg,
+      rgba(20, 17, 14, 0.58) 0%,
+      rgba(20, 17, 14, 0.46) 36%,
+      rgba(20, 17, 14, 0.94) 56%,
+      rgba(12, 10, 8, 0.97) 100%
+    ),
     url("/cine-fondo.jpg") center / cover no-repeat;
 }
 
@@ -403,7 +411,9 @@ select {
   border-radius: 50%;
   background: #1a1408;
   color: var(--amber);
-  transition: transform 180ms ease, border-color 180ms ease;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
 }
 
 .marca:hover .marca-sello {
@@ -726,7 +736,9 @@ select {
   color: var(--muted);
   padding: 4px 0;
   cursor: pointer;
-  transition: color 160ms ease, border-color 160ms ease;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
 }
 
 .filtros button.activo {
@@ -752,11 +764,21 @@ select {
   animation: entrar 280ms ease both;
 }
 
-.boletos .ticket:nth-child(2) { animation-delay: 40ms; }
-.boletos .ticket:nth-child(3) { animation-delay: 80ms; }
-.boletos .ticket:nth-child(4) { animation-delay: 120ms; }
-.boletos .ticket:nth-child(5) { animation-delay: 160ms; }
-.boletos .ticket:nth-child(n + 6) { animation-delay: 200ms; }
+.boletos .ticket:nth-child(2) {
+  animation-delay: 40ms;
+}
+.boletos .ticket:nth-child(3) {
+  animation-delay: 80ms;
+}
+.boletos .ticket:nth-child(4) {
+  animation-delay: 120ms;
+}
+.boletos .ticket:nth-child(5) {
+  animation-delay: 160ms;
+}
+.boletos .ticket:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
 
 .ticket {
   position: relative;
@@ -1172,6 +1194,56 @@ select {
   .reja {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 10px;
+  }
+}
+
+.noche-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.noche-grupo {
+  margin-top: 22px;
+}
+
+.noche-grupo h2 {
+  margin-bottom: 12px;
+}
+
+.noche-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.noche-resumen .meta,
+.noche-elegidas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.noche-elegidas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 801px) {
+  .noche-columnas.con-resumen {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  }
+
+  .noche-resumen {
+    position: sticky;
+    top: 84px;
   }
 }
 
