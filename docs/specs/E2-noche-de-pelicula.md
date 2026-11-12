@@ -303,6 +303,8 @@ El subagente `.claude/agents/revisor.md` lee el diff preparado y lo confronta co
 
 La publicación es GitHub Pages del repositorio, con el flujo en `.github/workflows/pages.yml`. Las variables `VITE_` salen de los secretos del repositorio. `vite.config.ts` usa `VITE_BASE` solo en ese flujo. Recargar una ruta sirve `404.html`, copia de `index.html`, para que el enrutador del cliente responda.
 
+Vercel publica el mismo repositorio en la raíz de `mi-cartelera-personal.vercel.app`. Ahí un archivo que existe se sirve tal cual. Una ruta que no es un archivo, como `/noche`, tiene que devolver `index.html`: lo hace la reescritura de `vercel.json`. Sin eso, recargar Noche responde que la página no existe, aunque el JavaScript ya traiga la pantalla.
+
 ## Criterio → verificación
 
 Los pasos de navegador están en `docs/VERIFICACION.md` con el id de la columna «En el navegador». Hasta ese documento, el id nombra la comprobación.

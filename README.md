@@ -93,7 +93,7 @@ La app publicada: https://rmandors.github.io/Mi-Cartelera-Personal/
 
 El agente lee `AGENTS.md`. `CLAUDE.md` importa ese archivo. La skill `/commit` está en `.claude/skills/commit/SKILL.md` y no se invoca sola (`disable-model-invocation`). Antes del commit invoca al subagente `.claude/agents/revisor.md`. Si no hay bloqueo, deja `.git/REVISOR_OK`; el hook `PreToolUse` niega el `git commit` del agente sin esa marca. Un commit escrito a mano en la terminal no pasa por ese hook. Después de escribir o editar un archivo, el hook `PostToolUse` corre `.claude/hooks/formatear.sh`, que formatea ese archivo con Prettier. La configuración es `.prettierrc`.
 
-GitHub Pages se construye con `.github/workflows/pages.yml`. Las claves van en los secretos del repositorio, no en el código.
+GitHub Pages se construye con `.github/workflows/pages.yml`. Las claves van en los secretos del repositorio, no en el código. Vercel publica la misma app en [mi-cartelera-personal.vercel.app](https://mi-cartelera-personal.vercel.app). `vercel.json` reescribe las rutas hacia `index.html`, así recargar `/noche` abre la pantalla y no un 404.
 
 Ninguna funcionalidad nueva entra sin spec en `docs/specs/`. El orden de esta entrega está en el historial: harness, estado inicial, diseño, PRD, backlog, spec y, después, un commit por ticket.
 
