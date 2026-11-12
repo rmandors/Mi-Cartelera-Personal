@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Cartelera · Brand board</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../src/index.css" />
+    <style>
+      .tablero {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 80px;
+      }
+
+      .tablero > h1 {
+        max-width: 16ch;
+      }
+
+      .tablero h2 {
+        margin-top: 40px;
+      }
+
+      .tablero .nota {
+        max-width: 62ch;
+        margin-top: 12px;
+      }
+
+      .muestras {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .muestra {
+        min-height: 96px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .muestra span,
+      .muestra code {
+        color: var(--ink);
+        font-size: 0.75rem;
+      }
+
+      .muestra code {
+        color: var(--muted);
+      }
+
+      .sobre-ambar span,
+      .sobre-ambar code {
+        color: var(--amber-ink);
+      }
+
+      .fila {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .tipo-muestra {
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        background: var(--bg-2);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="tablero">
+      <p class="kicker">Design system</p>
+      <h1>Brand board</h1>
+      <p class="programa">Sala oscura, ámbar de boleto, serif de cartel.</p>
+      <p class="nota">
+        Esta página usa <code>src/index.css</code> y las fuentes de la app. Los valores viven en
+        <code>DESIGN.md</code>. No es una pantalla del producto.
+      </p>
+
+      <h2>Color</h2>
+      <div class="muestras">
+        <div class="muestra" style="background: var(--bg)">
+          <span>--bg</span>
+          <code>#14110e</code>
+        </div>
+        <div class="muestra" style="background: var(--bg-2)">
+          <span>--bg-2</span>
+          <code>#1c1916</code>
+        </div>
+        <div class="muestra" style="background: var(--bg-3)">
+          <span>--bg-3</span>
+          <code>#2a241e</code>
+        </div>
+        <div class="muestra" style="background: var(--ink)">
+          <span style="color: var(--amber-ink)">--ink</span>
+          <code style="color: var(--amber-ink)">#f3eadf</code>
+        </div>
+        <div class="muestra" style="background: var(--muted)">
+          <span style="color: var(--amber-ink)">--muted</span>
+          <code style="color: var(--amber-ink)">#a89884</code>
+        </div>
+        <div class="muestra" style="background: var(--amber)">
+          <span class="sobre-ambar" style="color: var(--amber-ink)">--amber</span>
+          <code style="color: var(--amber-ink)">#e2a23a</code>
+        </div>
+        <div class="muestra" style="background: var(--amber-ink)">
+          <span>--amber-ink</span>
+          <code>#1a1408</code>
+        </div>
+        <div class="muestra" style="background: var(--stamp)">
+          <span>--stamp</span>
+          <code>#d4533a</code>
+        </div>
+      </div>
+
+      <h2>Tipo</h2>
+      <div class="tipo-muestra">
+        <p class="kicker">Ceja</p>
+        <h1>Mi Cartelera</h1>
+        <p class="programa">Una frase en serif itálica.</p>
+        <p class="meta">Texto secundario en Schibsted Grotesk, color muted.</p>
+      </div>
+
+      <h2>Controles</h2>
+      <div class="fila">
+        <button class="boton" type="button">Guardar la noche</button>
+        <button class="boton linea" type="button">Quitar</button>
+        <button class="boton peligro" type="button">Borrar sesión</button>
+        <button class="boton" type="button" disabled>Deshabilitado</button>
+      </div>
+      <div class="fila">
+        <label class="campo crecer">
+          <span>Tiempo disponible</span>
+          <input type="text" value="120" readonly />
+        </label>
+      </div>
+      <div class="fila" style="flex-direction: column; align-items: stretch">
+        <p class="aviso" role="alert">TMDB no tiene la duración de esta película.</p>
+        <p class="aviso ok" role="status">La sesión quedó guardada.</p>
+        <p class="estado-carga" role="status">Consultando duraciones…</p>
+      </div>
+
+      <h2>Boleto</h2>
+      <div class="boletos">
+        <article class="ticket">
+          <div class="ticket-poster">
+            <div class="poster-marco boleto" aria-hidden="true">
+              <span class="poster-letra">P</span>
+            </div>
+          </div>
+          <div class="ticket-cuerpo">
+            <p class="kicker">Película · 96 min</p>
+            <h2>Perfect Days</h2>
+            <p class="meta">Cabe en el tiempo que queda.</p>
+            <div class="ticket-acciones">
+              <button class="boton" type="button">Agregar</button>
+              <button class="boton linea" type="button">Quitar</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="vacio">
+        <h2>La sala está vacía.</h2>
+        <p>Estado vacío: una frase corta y, si hace falta, un enlace.</p>
+      </div>
+    </main>
+  </body>
+</html>
