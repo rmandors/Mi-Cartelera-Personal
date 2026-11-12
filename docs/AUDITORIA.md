@@ -2,7 +2,7 @@
 
 Fecha de la revisión: 11 de noviembre de 2026. Cada criterio queda en cumple, no cumple o sin verificar.
 
-`npm test` pasa: 14 tests en `src/dominio/noche.test.ts`. `npm run lint` y `npm run build` pasan. El 11 de noviembre se recorrió `http://localhost:5173/noche` con la cuenta `usuariotest@gmail.com` y con una segunda cuenta creada en `/registro`. La migración está aplicada y el proyecto remoto estaba activo. Lo visto está en la columna «Resultado obtenido» de `docs/VERIFICACION.md`.
+`npm test` pasa: 22 tests en `src/dominio/noche.test.ts`. `npm run lint` y `npm run build` pasan. El 11 de noviembre se recorrió `http://localhost:5173/noche` con la cuenta `usuariotest@gmail.com` y con una segunda cuenta creada en `/registro`. La misma noche se recorrieron llenar la noche, el filtro de género, «Ya la vi» y un insert que no cabe. Las dos migraciones están aplicadas y el proyecto remoto estaba activo. Lo visto está en la columna «Resultado obtenido» de `docs/VERIFICACION.md`.
 
 ## Criterios de negocio
 
@@ -25,11 +25,17 @@ Fecha de la revisión: 11 de noviembre de 2026. Cada criterio queda en cumple, n
 | CA-15 | cumple | Test «recorta y exige entre 1 y 60 caracteres». El vacío y 61 caracteres avisaron y no guardaron. «Solo de A» se guardó con fecha 11 nov 2026. El campo corta la escritura en 60. V-15. |
 | CA-16 | cumple | `guardarSesion` no llama a `actualizarTitulo`. Después de guardar, esas películas seguían Por ver. V-16. |
 | CA-17 | cumple | `/noche/1` mostró nombre, fecha, 392 min disponibles, 102 en total y Toy Story 5 con 102 min. V-17. |
-| CA-18 | cumple | La migración no crea política de `update`. El detalle no tiene campos. Cancelar el borrado deja la noche; confirmarlo la quita y la otra sigue. V-18. |
+| CA-18 | cumple | El detalle no tiene campos para el nombre, el tiempo ni las películas. Cancelar el borrado deja la noche; confirmarlo la quita. V-18. La política de `update` solo existe para `sesiones`. Cambiar el nombre de una fila de prueba respondió «Una sesión guardada no se edita. Solo se puede marcar como realizada.» Desmarcarla, después de `realizada = true`, respondió «Una noche realizada no vuelve a estar pendiente.» La fila de prueba se borró. |
 | CA-19 | cumple | No hay unicidad de película entre sesiones. Segunda noche y Solo de A mostraban las dos a Toy Story 5. V-19. |
 | CA-20 | cumple | La migración usa `on delete set null`. Al quitar La Odisea de la lista, la noche conservó título, 173 min y el total, y avisó que ya no está. V-20. |
 | CA-21 | cumple | `/noche` y `/noche/:id` cuelgan de `RutaProtegida`. Sin sesión, los dos terminaron en `/login` y no se vio ninguna noche. V-21. |
 | CA-22 | cumple | Con la cuenta B, Noche no listaba las noches de A, `/noche/1` dijo que no es de esa cuenta, y el select y el delete devolvieron 0 filas. Al volver a A, las dos noches seguían. V-22. |
+| CA-23 | cumple | Tests de `llenarNoche`. Con 600, el botón armó las tres películas en 392 min y dos pausas. Con Animación armó solo Toy Story 5. Con 30 dijo que ninguna cabe y dejó la selección vacía. V-24. |
+| CA-24 | cumple | Test de `filtrarPorGenero`. Acción dejó solo Resident Evil III. Extinción y Todos devolvió las tres. Cambiar a Drama no quitó Toy Story 5 del resumen. V-25. |
+| CA-25 | cumple | Guardar «Prueba vista» avisó que las películas siguen por ver. «Ya la vi» la marcó realizada y Toy Story 5 pasó a Vista. El detalle no ofreció editar el plan. Se devolvió la película a Por ver y se borró la noche. V-26. |
+| CA-26 | cumple | El check `sesiones_total_cabe` rechazó un total de 100 en 30 min. El disparador rechazó una película de 200 min en un tiempo de 120. «Prueba vista», que sí cabía, se guardó desde la pantalla. V-27. |
+| CA-27 | cumple | Están `.claude/agents/revisor.md`, la skill `/commit` y `.claude/hooks/exigir-revisor.sh`. Con `CLAUDE_PROJECT_DIR` definido, un `git commit` sin `.git/REVISOR_OK` sale con código 2. Con la marca, el hook la consume y deja pasar. Sin esa variable, un commit de la terminal no se frena. |
+| CA-28 | sin verificar | El flujo está en `.github/workflows/pages.yml` y el README apunta a `https://rmandors.github.io/Mi-Cartelera-Personal/`. El enlace todavía no está publicado: faltan el push, los secretos y activar Pages. |
 
 ## Diseño
 
@@ -51,5 +57,5 @@ Al revisar el guardado, el `grant` de la tabla no alcanza para que el identity a
 ## Pendiente, con razón
 
 - La deuda de `docs/ESTADO-INICIAL.md` sigue abierta a propósito: no hay esquema del Proyecto 3 en git, no se movió `AuthContext` a `src/lib`, y el README conserva la contraseña de demostración. No son parte de E2.
-- Los opcionales (llenar la noche, filtro por género, marcar como realizada, validar «cabe» también en la base) no se construyeron. Están rechazados en `docs/backlog/refinamiento.md`.
+- Publicar la app (CA-28) sigue pendiente: el flujo y la dirección están escritos, y el enlace no responde todavía.
 - La cuenta `noche.b.hw04@gmail.com` quedó creada y vacía. `public.eliminar_cuenta` no está en el esquema, así que no se pudo dar de baja desde la app.
