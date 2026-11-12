@@ -17,6 +17,7 @@ interface ResumenSesionProps {
   onGuardar: () => void
   guardando: boolean
   onQuitar: (id: number) => void
+  onLlenar: () => void
 }
 
 export function ResumenSesion({
@@ -29,6 +30,7 @@ export function ResumenSesion({
   onGuardar,
   guardando,
   onQuitar,
+  onLlenar,
 }: ResumenSesionProps) {
   const total = duracionTotal(
     elegidas.map((pelicula) => pelicula.duracion),
@@ -76,6 +78,9 @@ export function ResumenSesion({
           onChange={(evento) => onNombre(evento.target.value)}
         />
       </label>
+      <button className="boton linea" type="button" onClick={onLlenar}>
+        Llenar la noche
+      </button>
       <button className="boton" type="button" onClick={onGuardar} disabled={guardando}>
         {guardando ? "Guardando…" : "Guardar la noche"}
       </button>

@@ -13,6 +13,7 @@ import {
   cabe,
   duracionTotal,
   evaluarAgregado,
+  llenarNoche,
   peliculasQueCaben,
   validarNombre,
   validarTiempo,
@@ -163,6 +164,31 @@ export function NocheDePelicula() {
       ...actual,
       { id: pelicula.id, titulo: pelicula.titulo, duracion: pelicula.duracion ?? 0 },
     ])
+  }
+
+  function llenar() {
+    if (tiempo === null) return
+    const propuesta = llenarNoche(tiempo, candidatas, PAUSA_MINUTOS)
+    if (propuesta.length === 0) {
+      setAvisoTono("error")
+      setAvisoId(null)
+      setAvisoAgregar("Ninguna de estas películas cabe en el tiempo.")
+      return
+    }
+    setElegidas(
+      propuesta.map((pelicula) => ({
+        id: pelicula.id,
+        titulo: pelicula.titulo,
+        duracion: pelicula.duracion ?? 0,
+      })),
+    )
+    setAvisoTono("ok")
+    setAvisoId(null)
+    setAvisoAgregar(
+      propuesta.length === 1
+        ? "Armé la noche con 1 película."
+        : `Armé la noche con ${propuesta.length} películas.`,
+    )
   }
 
   function quitar(id: number) {
@@ -362,6 +388,7 @@ export function NocheDePelicula() {
             onGuardar={() => void guardar()}
             guardando={guardando}
             onQuitar={quitar}
+            onLlenar={llenar}
           />
         </div>
       ) : null}

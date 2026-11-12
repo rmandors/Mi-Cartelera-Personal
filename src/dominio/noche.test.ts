@@ -4,6 +4,7 @@ import {
   cabe,
   duracionTotal,
   evaluarAgregado,
+  llenarNoche,
   peliculasQueCaben,
   validarNombre,
   validarTiempo,
@@ -131,6 +132,75 @@ describe("peliculasQueCaben", () => {
       "sin_duracion",
       "sin_duracion",
     ])
+  })
+})
+
+describe("llenarNoche", () => {
+  const pelicula = (id: number, titulo: string, duracion: number | null) => ({
+    id,
+    titulo,
+    duracion,
+  })
+
+  it("arma la combinación que más llena el tiempo", () => {
+    const noche = llenarNoche(
+      100,
+      [pelicula(1, "Corta", 40), pelicula(2, "Media", 50), pelicula(3, "Mini", 30)],
+      PAUSA_MINUTOS,
+    )
+    expect(noche.map((item) => item.titulo)).toEqual(["Corta", "Media"])
+    expect(duracionTotal([40, 50], PAUSA_MINUTOS)).toBe(100)
+  })
+
+  it("agrega cuando la suma con pausa ocupa exactamente el tiempo", () => {
+    const noche = llenarNoche(
+      140,
+      [pelicula(1, "Corta", 40), pelicula(2, "Media", 50), pelicula(3, "Mini", 30)],
+      PAUSA_MINUTOS,
+    )
+    expect(noche.map((item) => item.duracion)).toEqual([30, 40, 50])
+  })
+
+  it("una sola película llena sin pausa", () => {
+    const noche = llenarNoche(
+      120,
+      [pelicula(1, "Justa", 120), pelicula(2, "Otra", 50)],
+      PAUSA_MINUTOS,
+    )
+    expect(noche.map((item) => item.titulo)).toEqual(["Justa"])
+  })
+
+  it("ignora la duración nula y la que no cabe sola", () => {
+    const noche = llenarNoche(
+      90,
+      [
+        pelicula(1, "Sirve", 80),
+        pelicula(2, "Larga", 91),
+        pelicula(3, "Vacía", null),
+        pelicula(4, "Cero", 0),
+      ],
+      PAUSA_MINUTOS,
+    )
+    expect(noche.map((item) => item.titulo)).toEqual(["Sirve"])
+  })
+
+  it("en empate de minutos prefiere más películas", () => {
+    const noche = llenarNoche(
+      70,
+      [pelicula(1, "Larga", 70), pelicula(2, "A", 30), pelicula(3, "B", 30)],
+      PAUSA_MINUTOS,
+    )
+    expect(noche.map((item) => item.titulo)).toEqual(["A", "B"])
+  })
+
+  it("en empate de minutos y de cantidad prefiere el título menor", () => {
+    const noche = llenarNoche(50, [pelicula(1, "Zoo", 50), pelicula(2, "Ana", 50)], PAUSA_MINUTOS)
+    expect(noche.map((item) => item.titulo)).toEqual(["Ana"])
+  })
+
+  it("rechaza un tiempo inválido sin armar nada", () => {
+    expect(llenarNoche(29, [pelicula(1, "Corta", 20)], PAUSA_MINUTOS)).toEqual([])
+    expect(llenarNoche(60, [], PAUSA_MINUTOS)).toEqual([])
   })
 })
 

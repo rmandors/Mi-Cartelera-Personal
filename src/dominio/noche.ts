@@ -162,6 +162,146 @@ export function peliculasQueCaben(
   return { caben, noDisponibles }
 }
 
+const TOPE_BUSQUEDA = 18
+
+export function llenarNoche(
+  tiempo: number,
+  candidatas: readonly Candidata[],
+  pausa: number,
+): Candidata[] {
+  const tiempoValido = validarTiempo(tiempo)
+  if (!tiempoValido.ok || pausa < 0) return []
+
+  const vistas = new Set<number>()
+  const utiles: Candidata[] = []
+  for (const candidata of candidatas) {
+    if (vistas.has(candidata.id)) continue
+    vistas.add(candidata.id)
+    if (candidata.duracion == null || candidata.duracion <= 0) continue
+    if (!cabe(tiempoValido.minutos, [candidata.duracion], pausa)) continue
+    utiles.push(candidata)
+  }
+  if (utiles.length === 0) return []
+
+  const limite = tiempoValido.minutos
+  const elegidas =
+    utiles.length <= TOPE_BUSQUEDA
+      ? buscarExhaustiva(utiles, limite, pausa)
+      : buscarPorProgramacion(utiles, limite, pausa)
+
+  return ordenarCandidatas(elegidas)
+}
+
+function ordenarCandidatas(lista: readonly Candidata[]): Candidata[] {
+  return [...lista].sort((a, b) => {
+    const porDuracion = (a.duracion ?? 0) - (b.duracion ?? 0)
+    if (porDuracion !== 0) return porDuracion
+    const porTitulo = a.titulo.localeCompare(b.titulo, "es")
+    if (porTitulo !== 0) return porTitulo
+    return a.id - b.id
+  })
+}
+
+function firma(lista: readonly Candidata[]): string {
+  return ordenarCandidatas(lista)
+    .map((pelicula) => `${pelicula.titulo}\u0000${pelicula.id}`)
+    .join("\u0001")
+}
+
+function totalDe(suma: number, cantidad: number, pausa: number): number {
+  if (cantidad === 0) return 0
+  return suma + pausa * (cantidad - 1)
+}
+
+function buscarExhaustiva(
+  utiles: readonly Candidata[],
+  limite: number,
+  pausa: number,
+): Candidata[] {
+  let mejor: Candidata[] = []
+  let mejorTotal = -1
+  const actual: Candidata[] = []
+
+  function visitar(indice: number, suma: number) {
+    const total = totalDe(suma, actual.length, pausa)
+    if (actual.length > 0 && total <= limite) {
+      const gana =
+        total > mejorTotal ||
+        (total === mejorTotal && actual.length > mejor.length) ||
+        (total === mejorTotal && actual.length === mejor.length && firma(actual) < firma(mejor))
+      if (gana) {
+        mejor = [...actual]
+        mejorTotal = total
+      }
+    }
+
+    for (let i = indice; i < utiles.length; i += 1) {
+      const duracion = utiles[i].duracion ?? 0
+      const siguiente = totalDe(suma + duracion, actual.length + 1, pausa)
+      if (siguiente > limite) continue
+      actual.push(utiles[i])
+      visitar(i + 1, suma + duracion)
+      actual.pop()
+    }
+  }
+
+  visitar(0, 0)
+  return mejor
+}
+
+function buscarPorProgramacion(
+  utiles: readonly Candidata[],
+  limite: number,
+  pausa: number,
+): Candidata[] {
+  const ordenadas = ordenarCandidatas(utiles)
+  const n = ordenadas.length
+  const camino: number[][][] = Array.from({ length: n + 1 }, () =>
+    Array.from({ length: limite + 1 }, () => [] as number[]),
+  )
+  const llega: boolean[][] = Array.from({ length: n + 1 }, () => Array(limite + 1).fill(false))
+  llega[0][0] = true
+
+  for (let i = 0; i < n; i += 1) {
+    const duracion = ordenadas[i].duracion ?? 0
+    for (let k = i; k >= 0; k -= 1) {
+      for (let d = limite - duracion; d >= 0; d -= 1) {
+        if (!llega[k][d]) continue
+        const nk = k + 1
+        const nd = d + duracion
+        if (totalDe(nd, nk, pausa) > limite) continue
+        const propuesta = [...camino[k][d], i]
+        if (
+          !llega[nk][nd] ||
+          firma(propuesta.map((indice) => ordenadas[indice])) <
+            firma(camino[nk][nd].map((indice) => ordenadas[indice]))
+        ) {
+          llega[nk][nd] = true
+          camino[nk][nd] = propuesta
+        }
+      }
+    }
+  }
+
+  let mejorTotal = -1
+  let mejorK = 0
+  let mejorD = 0
+  for (let k = 1; k <= n; k += 1) {
+    for (let d = 0; d <= limite; d += 1) {
+      if (!llega[k][d]) continue
+      const total = totalDe(d, k, pausa)
+      if (total > mejorTotal || (total === mejorTotal && k > mejorK)) {
+        mejorTotal = total
+        mejorK = k
+        mejorD = d
+      }
+    }
+  }
+
+  if (mejorTotal < 0) return []
+  return camino[mejorK][mejorD].map((indice) => ordenadas[indice])
+}
+
 function clasificarEntero(minutos: number): ResultadoTiempo {
   if (minutos < TIEMPO_MIN || minutos > TIEMPO_MAX) {
     return { ok: false, motivo: "fuera_de_rango" }
