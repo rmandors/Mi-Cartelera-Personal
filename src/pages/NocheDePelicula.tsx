@@ -3,12 +3,17 @@ import { Link } from "react-router-dom"
 import { Aviso } from "../components/Aviso"
 import { CandidataNoche } from "../components/CandidataNoche"
 import { EstadoCarga } from "../components/EstadoCarga"
+import { ResumenSesion, type ElegidaNoche } from "../components/ResumenSesion"
 import { SelectorTiempo } from "../components/SelectorTiempo"
 import {
   PAUSA_MINUTOS,
+  cabe,
+  duracionTotal,
+  evaluarAgregado,
   peliculasQueCaben,
   validarTiempo,
   type Candidata,
+  type MotivoAgregado,
   type MotivoNoDisponible,
 } from "../dominio/noche"
 import { useDuraciones } from "../hooks/useDuraciones"
@@ -29,6 +34,17 @@ function fraseNoDisponible(
   return `Dura ${duracion ?? 0} min y tu tiempo es ${tiempo} min.`
 }
 
+function fraseAgregado(motivo: MotivoAgregado, totalIntentado: number, tiempo: number): string {
+  if (motivo === "duplicada") return "Esa película ya está en esta sesión."
+  if (motivo === "no_cabe") {
+    return `No cabe en lo que queda: la noche quedaría en ${totalIntentado} min y tienes ${tiempo}.`
+  }
+  if (motivo === "sin_duracion") {
+    return "No se puede agregar: TMDB no tiene una duración para esta película."
+  }
+  return FRASE_TIEMPO
+}
+
 export function NocheDePelicula() {
   const [items, setItems] = useState<ItemLista[]>([])
   const [cargandoLista, setCargandoLista] = useState(true)
@@ -36,6 +52,9 @@ export function NocheDePelicula() {
   const [tiempoTexto, setTiempoTexto] = useState("")
   const [tiempo, setTiempo] = useState<number | null>(null)
   const [errorTiempo, setErrorTiempo] = useState<string | null>(null)
+  const [elegidas, setElegidas] = useState<ElegidaNoche[]>([])
+  const [avisoAgregar, setAvisoAgregar] = useState<string | null>(null)
+  const [avisoId, setAvisoId] = useState<number | null>(null)
   useTitulo("Noche de película")
 
   useEffect(() => {
@@ -63,11 +82,60 @@ export function NocheDePelicula() {
     const resultado = validarTiempo(tiempoTexto)
     if (!resultado.ok) {
       setTiempo(null)
+      setElegidas([])
+      setAvisoAgregar(null)
+      setAvisoId(null)
       setErrorTiempo(FRASE_TIEMPO)
       return
     }
     setErrorTiempo(null)
     setTiempo(resultado.minutos)
+    const sigueCabiendo = cabe(
+      resultado.minutos,
+      elegidas.map((pelicula) => pelicula.duracion),
+      PAUSA_MINUTOS,
+    )
+    if (!sigueCabiendo) {
+      setElegidas([])
+      setAvisoId(null)
+      setAvisoAgregar("Con este tiempo la selección anterior ya no cabe.")
+      return
+    }
+    setAvisoAgregar(null)
+    setAvisoId(null)
+  }
+
+  function agregar(pelicula: Candidata) {
+    if (tiempo === null) return
+    const resultado = evaluarAgregado(
+      tiempo,
+      elegidas,
+      { id: pelicula.id, duracion: pelicula.duracion },
+      PAUSA_MINUTOS,
+    )
+    if (!resultado.ok || pelicula.duracion == null) {
+      const totalIntentado = duracionTotal(
+        [...elegidas.map((elegida) => elegida.duracion), pelicula.duracion ?? 0],
+        PAUSA_MINUTOS,
+      )
+      setAvisoId(pelicula.id)
+      setAvisoAgregar(fraseAgregado(resultado.motivo ?? "sin_duracion", totalIntentado, tiempo))
+      return
+    }
+    setAvisoId(null)
+    setAvisoAgregar(null)
+    setElegidas((actual) => [
+      ...actual,
+      { id: pelicula.id, titulo: pelicula.titulo, duracion: pelicula.duracion ?? 0 },
+    ])
+  }
+
+  function quitar(id: number) {
+    setElegidas((actual) => actual.filter((pelicula) => pelicula.id !== id))
+    if (avisoId === id) {
+      setAvisoId(null)
+      setAvisoAgregar(null)
+    }
   }
 
   const candidatas: Candidata[] = porVer.map((item) => ({
@@ -110,7 +178,6 @@ export function NocheDePelicula() {
       ) : null}
       {errorTiempo ? <Aviso>{errorTiempo}</Aviso> : null}
 
-      {duraciones.cargando ? <EstadoCarga mensaje="Consultando duraciones…" /> : null}
       {duraciones.todasFallaron ? (
         <div className="noche-grupo">
           <Aviso>No se pudieron consultar las duraciones.</Aviso>
@@ -120,27 +187,39 @@ export function NocheDePelicula() {
         </div>
       ) : null}
 
-      {clasificacion && !duraciones.todasFallaron ? (
-        <div className="noche-columnas">
+      {tiempo !== null && !duraciones.todasFallaron ? (
+        <div className="noche-columnas con-resumen">
           <div>
-            <div className="noche-grupo">
-              <h2>Caben</h2>
-              {clasificacion.caben.length === 0 ? (
-                <p className="meta">Ninguna película cabe sola en ese tiempo.</p>
-              ) : (
-                <div className="boletos">
-                  {clasificacion.caben.map((pelicula) => (
-                    <CandidataNoche
-                      key={pelicula.id}
-                      titulo={pelicula.titulo}
-                      posterUrl={porIdLista.get(pelicula.id)?.poster_url ?? null}
-                      detalle={`${pelicula.duracion} min`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            {clasificacion.noDisponibles.length > 0 ? (
+            {duraciones.cargando ? <EstadoCarga mensaje="Consultando duraciones…" /> : null}
+            {clasificacion ? (
+              <div className="noche-grupo">
+                <h2>Caben</h2>
+                {clasificacion.caben.length === 0 ? (
+                  <p className="meta">Ninguna película cabe sola en ese tiempo.</p>
+                ) : (
+                  <div className="boletos">
+                    {clasificacion.caben.map((pelicula) => {
+                      const yaEsta = elegidas.some((elegida) => elegida.id === pelicula.id)
+                      return (
+                        <CandidataNoche
+                          key={pelicula.id}
+                          titulo={pelicula.titulo}
+                          posterUrl={porIdLista.get(pelicula.id)?.poster_url ?? null}
+                          detalle={`${pelicula.duracion} min`}
+                          aviso={avisoId === pelicula.id ? avisoAgregar : null}
+                          accion={{
+                            etiqueta: yaEsta ? "Quitar" : "Agregar",
+                            variante: yaEsta ? "linea" : "primaria",
+                            onClick: () => (yaEsta ? quitar(pelicula.id) : agregar(pelicula)),
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : null}
+            {clasificacion && clasificacion.noDisponibles.length > 0 ? (
               <div className="noche-grupo">
                 <h2>No disponibles</h2>
                 <div className="boletos">
@@ -153,7 +232,7 @@ export function NocheDePelicula() {
                         titulo={candidata.titulo}
                         posterUrl={item?.poster_url ?? null}
                         detalle="No disponible"
-                        aviso={error ?? fraseNoDisponible(motivo, candidata.duracion, tiempo ?? 0)}
+                        aviso={error ?? fraseNoDisponible(motivo, candidata.duracion, tiempo)}
                       />
                     )
                   })}
@@ -161,6 +240,12 @@ export function NocheDePelicula() {
               </div>
             ) : null}
           </div>
+          <ResumenSesion
+            tiempo={tiempo}
+            elegidas={elegidas}
+            aviso={avisoAgregar}
+            onQuitar={quitar}
+          />
         </div>
       ) : null}
     </section>
