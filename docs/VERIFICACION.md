@@ -32,6 +32,10 @@ Antes de empezar: `npm test` tiene que estar en verde. Entra con una cuenta que 
 | V-20 | CA-20 | En una sesión guardada, quita de Mi lista una de sus películas. Vuelve a abrir la sesión. | La sesión sigue. Conserva el título y la duración, avisa que ya no está en la lista y el total no cambió. | Se guardó Con La Odisea: 600 min disponibles y 173 en total. Al quitar La Odisea de Mi lista, la tarjeta decía «La Odisea (ya no está en tu lista)» y el detalle «173 MIN», el título y «Ya no está en tu lista.». El total siguió en 173. |
 | V-21 | CA-21 | Cierra la sesión e intenta abrir `/noche`. | Llegas al acceso. No se ve ninguna noche. | Salir llevó a `/login`. Abrir `/noche` y `/noche/1` también terminó en `/login`, sin nombres de noches. |
 | V-22 | CA-22 | Sigue el procedimiento de las dos cuentas, más abajo. | La cuenta B no ve ni puede borrar las noches de la cuenta A. | La cuenta B no vio Solo de A ni Con La Odisea. `/noche/1` dijo «Esta noche no está.» y «No existe o no es de tu cuenta.». Un select de sesiones devolvió 0 filas. Borrar la sesión 1 y sus películas devolvió 0 filas, sin error. Al volver como A, las dos noches seguían. |
+| V-24 | CA-23 | Con un tiempo válido, pulsa «Llenar la noche». Prueba también un tiempo donde ninguna quepa. | La selección pasa a ser la combinación que más minutos usa sin pasarse. Si ninguna cabe, no arma nada y lo dice. | |
+| V-25 | CA-24 | Pide qué cabe y elige un género. Vuelve a «Todos». | Solo se ven películas de ese género. «Todos» las devuelve. Lo ya elegido no se borra solo. | |
+| V-26 | CA-25 | Guarda una noche, ábrela y pulsa «Ya la vi». Mira Mi lista. Intenta editar el nombre. | La noche queda realizada y esas películas pasan a vista. Guardar, sin este botón, no las cambia. No aparecen campos para editar el plan. | |
+| V-27 | CA-26 | Desde el cliente, intenta insertar una sesión cuyo total declarado supera el tiempo, y otra cuyas películas con pausas lo superan. | La base rechaza las dos. Una sesión que sí cabe se guarda. | |
 
 ## Dos cuentas (V-22)
 

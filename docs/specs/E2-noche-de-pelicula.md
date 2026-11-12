@@ -13,17 +13,19 @@ DEBE
 - Dejar que las páginas hablen con esos servicios, nunca con `supabase` ni con `fetch` a TMDB.
 - Guardar las sesiones con RLS, de modo que una cuenta no lea ni borre las de otra.
 - Mantener TypeScript sin `any`.
+- Ofrecer «Llenar la noche» con `llenarNoche`, el filtro de género, marcar una sesión como realizada, y rechazar en la base una sesión que no cabe. Son los opcionales CA-23 a CA-26.
 
 NO DEBE
 
-- Cambiar el estado de una película al guardar la sesión.
+- Cambiar el estado de una película al guardar la sesión. Pasarlas a «vista» solo ocurre al marcar la noche como realizada.
 - Ofrecer series, ni películas que no estén «por ver».
-- Editar una sesión guardada.
+- Editar el nombre, el tiempo o las películas de una sesión guardada. Marcar como realizada no es esa edición.
+- Desmarcar una noche realizada.
 - Poner pausa antes de la primera película o después de la última.
 - Agregar una película sin duración conocida, o de duración 0.
 - Guardar una sesión sin películas, o con un nombre vacío o de más de 60 caracteres.
 - Meter la clave de TMDB o las de Supabase en el código. Siguen en `.env`.
-- Decidir en la base de datos si la suma cabe. Eso quedó fuera en RB-27. La base sí exige los rangos de tiempo, nombre y duración de cada fila.
+- Dejar que una suma con pausas, o un total declarado, supere el tiempo disponible aunque la escritura no pase por la pantalla.
 
 ## Modelo de datos
 
@@ -169,6 +171,23 @@ Archivo `src/dominio/noche.ts`. Constantes: `PAUSA_MINUTOS = 10`, `TIEMPO_MIN = 
 - Dentro de `noDisponibles` se conserva el orden de entrada.
 - Si el tiempo no es válido, `caben` queda vacío y todas las candidatas van a `noDisponibles` con el motivo que ya les tocaría por duración. La pantalla no llama a esta función si el tiempo no pasó `validarTiempo`.
 
+`Candidata` puede traer `generos?: readonly string[]`. Si no viene, se trata como lista vacía.
+
+`filtrarPorGenero(candidatas, genero)`:
+
+- `genero` null, vacío o solo espacios devuelve una copia de todas.
+- Si no, deja las candidatas que tengan ese nombre exacto en `generos`.
+- No reordena.
+
+`llenarNoche(tiempo, candidatas, pausa)`:
+
+- Tiempo inválido, pausa negativa o ninguna película usable: devuelve `[]`.
+- Usable: duración mayor que 0 y que, sola, cabe en el tiempo. La duración nula o 0 se ignora. Un id repetido se ignora después de la primera.
+- Entre los subconjuntos cuyo total con pausas no supera el tiempo, elige el de mayor total. A igual total, el de más películas. A igual total y cantidad, el de firma menor: títulos ordenados de la más corta a la más larga, y a igual título el id menor, comparados en `es`.
+- El resultado sale en ese mismo orden. Ese orden es el de la sesión que arma el botón.
+- Si hay más de 18 películas usables, la búsqueda exhaustiva se cambia por programación dinámica con el mismo objetivo de total y de cantidad. El desempate por título, en ese caso, es el del camino que queda al recorrer las películas ya ordenadas. La lista de una cuenta no llega a ese tamaño en la práctica.
+- No llama a la red.
+
 Ninguna de estas funciones lanza por un dato de negocio. Devuelven un resultado.
 
 ## Servicios
@@ -183,6 +202,8 @@ En `src/lib/tmdb.ts`, `obtenerDuracion(tmdbId: number): Promise<number | null>` 
 - Si `pedir` lanza, el error se propaga y no se guarda en el mapa, para que un reintento pueda funcionar.
 - `buscarTitulos` y `obtenerDetalle` no cambian su contrato.
 
+`obtenerFichaNoche(tmdbId)` usa esa misma petición y esa misma caché. Devuelve `{ minutos, generos }`. `generos` son los `name` no vacíos de `genres`, en el orden del catálogo. `obtenerDuracion` pasa a leer `minutos` de esa ficha, para no pedir la película dos veces.
+
 ### Sesiones
 
 `src/lib/sesiones.ts` usa el cliente de `src/lib/supabase.ts`. Si no está configurado, devuelve el mismo estilo de error que `lista.ts`.
@@ -190,7 +211,7 @@ En `src/lib/tmdb.ts`, `obtenerDuracion(tmdbId: number): Promise<number | null>` 
 Tipos que salen del servicio, ya en camelCase:
 
 - `PeliculaGuardada`: `id`, `miListaId` (`null` si ya no está en la lista), `tmdbId`, `titulo`, `posterUrl`, `duracion`, `posicion`.
-- `SesionGuardada`: `id`, `nombre`, `tiempoDisponible`, `duracionTotal`, `creadaEn`, `peliculas` ordenadas por `posicion`.
+- `SesionGuardada`: `id`, `nombre`, `tiempoDisponible`, `duracionTotal`, `creadaEn`, `realizada`, `peliculas` ordenadas por `posicion`.
 - `NuevaSesion`: `nombre`, `tiempoDisponible`, `duracionTotal`, y `peliculas` con `miListaId`, `tmdbId`, `titulo`, `posterUrl`, `duracion`, `posicion`. Sin `user_id`.
 
 Funciones:
@@ -199,8 +220,9 @@ Funciones:
 - `obtenerSesion(id)`: una sesión o `null` si no existe o no es suya. RLS hace que la ajena se vea como ausente.
 - `guardarSesion(entrada)`: rechaza nombre inválido, lista vacía, duración menor o igual que 0 o posición repetida, sin intentar el insert. Inserta la sesión y después las películas. Si las películas fallan, borra la sesión recién creada y devuelve el error. No vuelve a calcular si la selección cabe.
 - `eliminarSesion(id)`: borra la sesión. Las filas hijas caen por la cascada.
+- `marcarRealizada(sesion)`: si ya está realizada, no escribe y devuelve error. Si no, pasa a «vista» cada película con `miListaId`, mediante `actualizarTitulo` de `src/lib/lista.ts`. Las que tienen `miListaId` null se omiten y sus títulos vuelven en el resultado. Después pone `realizada` en true. Si una película no se puede actualizar, no marca la sesión, para poder reintentar. `guardarSesion` no llama a esta función ni a `actualizarTitulo`.
 
-El insert de películas manda `mi_lista_id`, no el estado. Nada en este servicio llama a `actualizarTitulo`.
+El insert de películas manda `mi_lista_id`, no el estado.
 
 ## Interfaz
 
@@ -214,7 +236,7 @@ Rutas, dentro del mismo bloque que ya exige sesión (`RutaProtegida` y `MarcoApp
 Piezas:
 
 - `src/components/SelectorTiempo.tsx`. Campo con la clase de formulario de `DESIGN.md` y un botón primario «Ver qué cabe». No usa `Campo`, porque ese componente no tiene tipo numérico. El valor viaja como texto a `validarTiempo`.
-- `src/hooks/useDuraciones.ts`. Recibe los `tmdbId` de las películas por ver. Pide `obtenerDuracion` de cada una en paralelo. Guarda minutos o el mensaje de error por id. Expone `cargando`, `reintentar` y el mapa.
+- `src/hooks/useDuraciones.ts`. Recibe los `tmdbId` de las películas por ver. Pide `obtenerFichaNoche` de cada una en paralelo. Guarda minutos, géneros o el mensaje de error por id. Expone `cargando`, `reintentar` y el mapa.
 - `src/components/CandidataNoche.tsx`. Un boleto: póster, título, duración o motivo, y, cuando la pantalla ya arma la sesión, el botón de agregar o quitar.
 - `src/components/ResumenSesion.tsx`. Películas elegidas, en orden de agregado, total, restante, nombre y guardar. También explica el rechazo.
 
@@ -236,6 +258,11 @@ La página traduce el motivo. El dominio no arma oraciones.
 | sin películas al guardar | La noche necesita al menos una película. |
 | película con `miListaId` null | Ya no está en tu lista. |
 | error de una duración | El mensaje que lanzó el servicio, en esa película. |
+| llenar sin candidatas | Ninguna de estas películas cabe en el tiempo. |
+| llenar con propuesta | Armé la noche con {n} películas. |
+| ya realizada | Esta noche ya está realizada. |
+| confirmar realizada | ¿Marcar «{nombre}» como realizada? Las que sigan en tu lista pasan a vista. |
+| realizada, alguna fuera de la lista | La noche quedó realizada. Estas ya no estaban en tu lista: {títulos}. |
 
 Carga: «Consultando duraciones…», con `EstadoCarga`. Error de toda la consulta: `Aviso`, más un botón para `reintentar`. Lista sin películas por ver: bloque `.vacio` que enlace a `/buscar`. Sin sesiones guardadas: `.vacio` con «Todavía no guardas una noche.»
 
@@ -245,16 +272,36 @@ Carga: «Consultando duraciones…», con `EstadoCarga`. Error de toda la consul
 2. El tiempo no se consulta solo. La persona escribe y pulsa «Ver qué cabe», o confirma el campo.
 3. Si `validarTiempo` falla, `Aviso` con la frase y no se pide TMDB.
 4. Si pasa, el hook pide las duraciones. Mientras, `EstadoCarga`. Si todas lanzan, `Aviso` y reintento. Si solo algunas lanzan, esas van a no disponibles con su error y el resto se clasifica.
-5. `peliculasQueCaben` parte el resultado. Cada una que cabe muestra su duración. El orden es el de la función.
-6. Agregar llama a `evaluarAgregado`. Si `ok` es falso, la película no entra y `Aviso` muestra la frase. Quitar la saca de `actuales` y el total se vuelve a calcular con `duracionTotal`.
-7. El resumen está visible en cuanto el tiempo es válido, aunque todavía no haya películas: total 0 y restante igual al tiempo.
-8. Guardar exige nombre válido y al menos una película. `duracionTotal` de las elegidas es el `duracionTotal` que se manda. `posicion` empieza en 1 según el orden de agregado. `miListaId` es el `id` de `mi_lista`.
-9. Si guarda, limpia la selección y el nombre, muestra `Aviso` de éxito y vuelve a listar las sesiones. No navega a la ficha de la película ni llama a `actualizarTitulo`.
-10. Debajo, las sesiones de `listarSesiones`. Cada una enlaza a `/noche/:id` y se puede borrar con `Dialogo`. Borrar usa `eliminarSesion`.
+5. `filtrarPorGenero` se aplica antes de `peliculasQueCaben`. El grupo de filtros usa la clase `.filtros` que ya tiene la lista: un botón «Todos» y uno por cada género presente, ordenados con `localeCompare` en `es`. El activo usa la clase `activo`.
+6. `peliculasQueCaben` parte el resultado filtrado. Cada una que cabe muestra su duración. El orden es el de la función.
+7. Agregar llama a `evaluarAgregado`. Si `ok` es falso, la película no entra y `Aviso` muestra la frase. Quitar la saca de `actuales` y el total se vuelve a calcular con `duracionTotal`.
+8. «Llenar la noche» es un botón de línea en el resumen. Llama a `llenarNoche` con las candidatas ya filtradas por género. Si devuelve vacío, `Aviso` de error con la frase. Si no, sustituye `elegidas` en el orden devuelto y `Aviso` de éxito con la frase. No guarda y no cambia estados.
+9. El resumen está visible en cuanto el tiempo es válido, aunque todavía no haya películas: total 0 y restante igual al tiempo.
+10. Guardar exige nombre válido y al menos una película. `duracionTotal` de las elegidas es el `duracionTotal` que se manda. `posicion` empieza en 1 según el orden de agregado. `miListaId` es el `id` de `mi_lista`.
+11. Si guarda, limpia la selección y el nombre, muestra `Aviso` de éxito y vuelve a listar las sesiones. No navega a la ficha de la película ni llama a `actualizarTitulo`.
+12. Debajo, las sesiones de `listarSesiones`. Cada una enlaza a `/noche/:id` y se puede borrar con `Dialogo`. Borrar usa `eliminarSesion`. Si `realizada` es true, la tarjeta lo dice.
 
 ### Comportamiento de `/noche/:id`
 
 Lee `obtenerSesion`. Si no hay sesión, `.vacio` dice que no está o que no es de esta cuenta, con enlace de vuelta a `/noche`. Si está, muestra nombre, fecha con `fechaCorta`, tiempo disponible, total y las películas en orden, con la frase de «ya no está en tu lista» cuando `miListaId` es null. No hay campos editables. Hay un botón de borrar que vuelve a `/noche`.
+
+Si `realizada` es false, hay un botón primario «Ya la vi». Confirma con `Dialogo` y llama a `marcarRealizada`. Si sobran títulos fuera de la lista, el aviso los nombra. Si ya está realizada, no hay ese botón y se lee «Realizada».
+
+## Opcionales en la base
+
+La migración `supabase/migrations/20261111_noche_de_pelicula.sql` no se reescribe: ya está aplicada. Lo nuevo va en `supabase/migrations/20261112_noche_opcionales.sql` y se ejecuta una vez en el SQL Editor.
+
+- `sesiones.realizada boolean not null default false`.
+- Check `duracion_total <= tiempo_disponible`.
+- `grant update` solo sobre `sesiones`, con política `user_id = auth.uid()`. No hay `update` sobre `sesion_peliculas`.
+- Antes de actualizar una sesión, un disparador rechaza el cambio si se toca cualquier columna distinta de `realizada`, o si se intenta volver a false.
+- Después de insertar una película de la sesión, otro disparador suma `duracion` y suma `10 * (n - 1)`. Si ese total supera `tiempo_disponible` o `duracion_total`, la inserción falla y no queda la fila.
+
+## Revisor y publicación
+
+El subagente `.claude/agents/revisor.md` lee el diff preparado y lo confronta con esta spec: dominio puro, sin `any`, sin claves, sin editar una sesión más allá de `realizada`, sin pasar a «vista» al guardar, RLS intacto y sin Bootstrap. La skill `/commit` lo invoca antes de `git commit`. Si reporta un bloqueo, no hay commit. El hook de `.claude/settings.json` niega ese `git commit` al agente si no existe la marca de revisión. Un commit escrito a mano en la terminal no pasa por ese hook.
+
+La publicación es GitHub Pages del repositorio, con el flujo en `.github/workflows/pages.yml`. Las variables `VITE_` salen de los secretos del repositorio. `vite.config.ts` usa `VITE_BASE` solo en ese flujo. Recargar una ruta sirve `404.html`, copia de `index.html`, para que el enrutador del cliente responda.
 
 ## Criterio → verificación
 
@@ -279,11 +326,17 @@ Los pasos de navegador están en `docs/VERIFICACION.md` con el id de la columna 
 | CA-15 | Test de `validarNombre`. Navegador V-15. |
 | CA-16 | Inspección: `guardarSesion` no llama a `actualizarTitulo`. Navegador V-16. |
 | CA-17 | `listarSesiones` y la página de detalle. Navegador V-17. |
-| CA-18 | No hay política de update ni controles de edición. Navegador V-18. |
+| CA-18 | El disparador rechaza editar nombre, tiempo o películas. Navegador V-18. |
 | CA-19 | No hay restricción única de película entre sesiones. Navegador V-19. |
 | CA-20 | `on delete set null` y la frase en el detalle. Navegador V-20. |
 | CA-21 | La ruta cuelga de `RutaProtegida`. Navegador V-21. |
 | CA-22 | Políticas `user_id = auth.uid()` y el ensayo de dos cuentas. Navegador V-22. |
+| CA-23 | Tests de `llenarNoche`. Navegador V-24. |
+| CA-24 | Tests de `filtrarPorGenero`. Navegador V-25. |
+| CA-25 | `marcarRealizada` y el detalle. Navegador V-26. CA-16 sigue en V-16. |
+| CA-26 | El check y el disparador de `20261112_noche_opcionales.sql`. Navegador V-27, con un insert que no cabe. |
+| CA-27 | `.claude/agents/revisor.md`, la skill `/commit` y el hook. |
+| CA-28 | El flujo de Pages y la dirección del README. |
 | DIS-01 a DIS-08 | `DESIGN.md` y revisión de la pantalla. Navegador V-23. |
 
 ## Ticket → archivos
@@ -299,3 +352,9 @@ Los pasos de navegador están en `docs/VERIFICACION.md` con el id de la columna 
 | NP-07 | `src/pages/NocheDePelicula.tsx`, `src/components/CandidataNoche.tsx`, `src/components/ResumenSesion.tsx` |
 | NP-08 | `src/pages/NocheDePelicula.tsx`, `src/pages/SesionGuardada.tsx`, `src/components/ResumenSesion.tsx`, `src/App.tsx` |
 | NP-09 | `docs/VERIFICACION.md` |
+| NP-10 | `src/dominio/noche.ts`, `src/dominio/noche.test.ts`, `src/components/ResumenSesion.tsx`, `src/pages/NocheDePelicula.tsx` |
+| NP-11 | `src/dominio/noche.ts`, `src/dominio/noche.test.ts`, `src/lib/tmdb.ts`, `src/hooks/useDuraciones.ts`, `src/pages/NocheDePelicula.tsx` |
+| NP-12 | `supabase/migrations/20261112_noche_opcionales.sql`, `src/lib/sesiones.ts`, `src/pages/SesionGuardada.tsx`, `src/pages/NocheDePelicula.tsx` |
+| NP-13 | `supabase/migrations/20261112_noche_opcionales.sql` |
+| NP-14 | `.claude/agents/revisor.md`, `.claude/skills/commit/SKILL.md`, `.claude/hooks/exigir-revisor.sh`, `.claude/settings.json`, `AGENTS.md` |
+| NP-15 | `.github/workflows/pages.yml`, `vite.config.ts`, `src/App.tsx`, `README.md` |
