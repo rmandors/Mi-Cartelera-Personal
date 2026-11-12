@@ -9,6 +9,7 @@ import { Login } from "./pages/Login"
 import { MiLista } from "./pages/MiLista"
 import { NocheDePelicula } from "./pages/NocheDePelicula"
 import { Registro } from "./pages/Registro"
+import { SesionGuardada } from "./pages/SesionGuardada"
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
               <Route path="/" element={<MiLista />} />
               <Route path="/buscar" element={<Buscar />} />
               <Route path="/noche" element={<NocheDePelicula />} />
+              <Route path="/noche/:id" element={<SesionGuardada />} />
               <Route path="/titulo/:id" element={<Detalle />} />
               <Route path="/ajustes" element={<Ajustes />} />
             </Route>

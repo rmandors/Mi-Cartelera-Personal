@@ -11,10 +11,25 @@ interface ResumenSesionProps {
   tiempo: number
   elegidas: readonly ElegidaNoche[]
   aviso: string | null
+  avisoTono?: "error" | "ok"
+  nombre: string
+  onNombre: (valor: string) => void
+  onGuardar: () => void
+  guardando: boolean
   onQuitar: (id: number) => void
 }
 
-export function ResumenSesion({ tiempo, elegidas, aviso, onQuitar }: ResumenSesionProps) {
+export function ResumenSesion({
+  tiempo,
+  elegidas,
+  aviso,
+  avisoTono = "error",
+  nombre,
+  onNombre,
+  onGuardar,
+  guardando,
+  onQuitar,
+}: ResumenSesionProps) {
   const total = duracionTotal(
     elegidas.map((pelicula) => pelicula.duracion),
     PAUSA_MINUTOS,
@@ -50,7 +65,21 @@ export function ResumenSesion({ tiempo, elegidas, aviso, onQuitar }: ResumenSesi
           ))}
         </ul>
       )}
-      {aviso ? <Aviso>{aviso}</Aviso> : null}
+      <label className="campo" htmlFor="nombre-noche">
+        <span>Nombre</span>
+        <input
+          id="nombre-noche"
+          type="text"
+          maxLength={60}
+          value={nombre}
+          placeholder="Sábado en casa"
+          onChange={(evento) => onNombre(evento.target.value)}
+        />
+      </label>
+      <button className="boton" type="button" onClick={onGuardar} disabled={guardando}>
+        {guardando ? "Guardando…" : "Guardar la noche"}
+      </button>
+      {aviso ? <Aviso tono={avisoTono}>{aviso}</Aviso> : null}
     </aside>
   )
 }
