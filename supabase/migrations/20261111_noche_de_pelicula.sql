@@ -42,6 +42,8 @@ revoke all on public.sesiones from anon;
 revoke all on public.sesion_peliculas from anon;
 grant select, insert, delete on public.sesiones to authenticated;
 grant select, insert, delete on public.sesion_peliculas to authenticated;
+grant usage, select on sequence public.sesiones_id_seq to authenticated;
+grant usage, select on sequence public.sesion_peliculas_id_seq to authenticated;
 
 drop policy if exists sesiones_select on public.sesiones;
 create policy sesiones_select on public.sesiones
