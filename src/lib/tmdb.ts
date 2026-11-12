@@ -1,6 +1,7 @@
 import type { FichaTmdb, ResultadoBusqueda, TipoContenido } from "../types/catalogo"
 
 const BASE = "https://api.themoviedb.org/3"
+const duracionesConocidas = new Map<number, number | null>()
 
 interface CrudoBusqueda {
   id: number
@@ -15,6 +16,10 @@ interface CrudoBusqueda {
 
 interface RespuestaBusqueda {
   results?: CrudoBusqueda[]
+}
+
+interface RespuestaRuntime {
+  runtime?: number | null
 }
 
 interface RespuestaDetalle {
@@ -64,6 +69,16 @@ async function pedir<T>(ruta: string, params: Record<string, string>): Promise<T
 function anioDe(fecha?: string): string | null {
   if (!fecha || fecha.length < 4) return null
   return fecha.slice(0, 4)
+}
+
+export async function obtenerDuracion(tmdbId: number): Promise<number | null> {
+  if (duracionesConocidas.has(tmdbId)) return duracionesConocidas.get(tmdbId) ?? null
+
+  const datos = await pedir<RespuestaRuntime>(`/movie/${tmdbId}`, {})
+  const runtime = datos.runtime
+  const minutos = typeof runtime === "number" && runtime > 0 ? Math.trunc(runtime) : null
+  duracionesConocidas.set(tmdbId, minutos)
+  return minutos
 }
 
 export async function buscarTitulos(consulta: string): Promise<ResultadoBusqueda[]> {
