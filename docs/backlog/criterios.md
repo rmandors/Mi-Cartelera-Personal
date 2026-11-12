@@ -57,3 +57,13 @@ Lenguaje de negocio. Cada criterio se verifica en la spec.
 **CA-21.** DADO que no tengo la sesión iniciada, CUANDO intento abrir Noche de película, ENTONCES llego al acceso y no veo sesiones de nadie.
 
 **CA-22.** DADO dos cuentas distintas, cada una con sus sesiones, CUANDO una abre Noche de película, ENTONCES solo ve y solo puede borrar las suyas.
+
+## Opcionales
+
+**CA-23.** DADO un tiempo válido y películas por ver que caben, CUANDO pido llenar la noche, ENTONCES la selección queda sustituida por la combinación que más minutos ocupa sin pasarse, pausas incluidas. Si ninguna cabe, no arma nada y me lo dice. Guardar esa propuesta no cambia el estado de las películas.
+
+**CA-24.** DADO que pedí qué cabe, CUANDO elijo un género, ENTONCES solo veo películas de ese género, tanto las que caben como las que no están disponibles. «Todos» vuelve a mostrarlas. Lo que ya había elegido no se quita solo por cambiar el filtro.
+
+**CA-25.** DADO una sesión guardada que todavía no marqué, CUANDO la marco como realizada, ENTONCES queda marcada y las películas que sigan en mi lista pasan a «vista». Las que ya no están en la lista se omiten y la sesión igual puede marcarse. No puedo cambiar el nombre, el tiempo ni las películas por este gesto, ni desmarcarla. Guardar, sin este gesto, las deja por ver.
+
+**CA-26.** DADO un intento de guardar una sesión cuya suma, con las pausas, supera el tiempo, o cuyo total declarado lo supera, CUANDO la escritura llega a la base saltándose la pantalla, ENTONCES la base la rechaza. Una sesión que sí cabe se sigue pudiendo guardar.

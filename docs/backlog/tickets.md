@@ -64,3 +64,45 @@ Un commit por ticket, con el id en el mensaje. Ninguno de estos archivos de cód
 - Historia: todas.
 - Depende de: NP-02 a NP-08.
 - Definition of done: `docs/VERIFICACION.md` tiene una fila por criterio CA y por criterio DIS, con los pasos, el resultado esperado y la columna «resultado obtenido» vacía para llenarla a mano. Incluye el procedimiento de las dos cuentas para CA-22.
+
+## NP-10 · Llenar la noche
+
+- Tipo: feat
+- Historia: H5.
+- Depende de: NP-02 y NP-07.
+- Definition of done: `llenarNoche` vive en `src/dominio/noche.ts`, sin red. Los tests cubren el máximo sin pasarse, el exacto, una sola película, la que no tiene duración, el empate por cantidad y el empate por título. En la pantalla, «Llenar la noche» sustituye la selección y, si no hay ninguna, lo explica. `npm test` pasa.
+
+## NP-11 · Filtro por género
+
+- Tipo: feat
+- Historia: H6.
+- Depende de: NP-04 y NP-06.
+- Definition of done: la ficha de TMDB que ya pide la duración también trae los géneros, en la misma consulta y en la misma caché. `filtrarPorGenero` es pura y tiene tests. La pantalla ofrece «Todos» y los géneros presentes. CA-24 se cumple. Buscar y la ficha del Proyecto 3 no cambian.
+
+## NP-12 · Marcar como realizada
+
+- Tipo: feat
+- Historia: H7.
+- Depende de: NP-05 y NP-08.
+- Definition of done: la migración agrega `realizada` y una política de actualización. Un disparador impide cambiar cualquier otro dato y impide desmarcar. El servicio marca la sesión y pasa a «vista» las películas que siguen en la lista. Guardar sigue sin llamar a ese cambio. La pantalla lo ofrece en el detalle y lo muestra en la lista.
+
+## NP-13 · La base exige que cabe
+
+- Tipo: db
+- Historia: H8.
+- Depende de: NP-03.
+- Definition of done: la migración rechaza un total declarado mayor que el tiempo y rechaza insertar películas cuya suma con pausas de 10 minutos supere el tiempo o el total declarado. No hay política nueva de actualización de películas. Queda escrito que hay que ejecutarla en el SQL Editor.
+
+## NP-14 · Revisor antes del commit
+
+- Tipo: chore
+- Historia: sostiene el proceso. No es una pantalla.
+- Depende de: el harness ya existente.
+- Definition of done: hay un subagente revisor en `.claude/agents/` y `/commit` lo invoca sobre el diff antes de commit. Si el revisor señala un bloqueo, no se commitea. Un hook del agente impide `git commit` sin esa revisión cuando el commit lo hace el agente. El commit a mano de la persona no queda bloqueado.
+
+## NP-15 · Publicar
+
+- Tipo: chore
+- Historia: el opcional de la app publicada.
+- Depende de: NP-08, para que la dirección sirva la noche.
+- Definition of done: hay un flujo que construye la app para GitHub Pages sin meter claves en el repositorio. Las rutas del cliente siguen abriendo al recargar. El README dice la dirección cuando el despliegue ya responde.

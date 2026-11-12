@@ -30,11 +30,7 @@ Queda fuera de E2, y no se construye en esta entrega:
 - Ver con amigos, invitar o compartir una sesión.
 - Recordatorios, notificaciones, calendario y plataformas de streaming.
 - Recomendar un título que no esté ya en la lista, en estado «por ver».
-- Cambiar el estado de una película por el hecho de guardarla en una sesión. Sigue «por ver».
-- Marcar la noche como realizada. Eso pasaría las películas a «vista» y contradice la regla anterior; si se hiciera, sería otra historia.
-- Llenar la noche con una combinación automática.
-- Filtrar la noche por género.
-- Impedir desde la base de datos, además de la pantalla, que se guarde una sesión que no cabe. La regla se exige en la app.
+- Cambiar el estado de una película por el hecho de guardarla en una sesión. Sigue «por ver». Marcar la noche como realizada es otro gesto, y ese sí la pasa a «vista».
 
 ## Reglas de negocio
 
@@ -62,6 +58,14 @@ Cada punto abierto de la ficha queda cerrado aquí.
 4. Si la persona quita de su lista una película que está en una sesión guardada, la sesión sigue existiendo. Conserva el título y la duración que tenía, muestra que ya no está en la lista y no recalcula el total. Borrar la película de la lista no borra la noche.
 
 5. La sesión tiene nombre y fecha. El nombre lo escribe la persona, es obligatorio y tiene de 1 a 60 caracteres ya sin espacios de sobra. La fecha es la de creación y la pone la app; se muestra al consultar la sesión y no se edita.
+
+6. Guardar y marcar como realizada son gestos distintos. Guardar no cambia el estado: la regla del cliente sigue igual. Marcar como realizada es posterior, lo pide la persona, y entonces las películas que sigan en su lista pasan a «vista». [Decisión] La contradicción se resuelve separando los dos momentos. No se puede desmarcar. No abre la edición del nombre, del tiempo ni de las películas. Una película que ya no está en la lista no tiene estado que cambiar; la sesión igual puede marcarse.
+
+7. «Llenar la noche» propone una combinación y sustituye lo que se estaba armando. Entra solo lo que cabe solo y lo que deja pasar el filtro de género. Gana la combinación que más minutos ocupa sin pasarse, pausas incluidas. Si dos ocupan lo mismo, gana la que tiene más películas. Si siguen empatadas, gana la de títulos menores una vez ordenadas de la más corta a la más larga. El orden de esa propuesta pasa a ser el orden de la sesión.
+
+8. El filtro de género usa los nombres que devuelve el catálogo en español. «Todos» no filtra. Una película entra si alguno de sus géneros es el elegido. Si el catálogo no le conoce géneros, solo aparece con «Todos». Lo ya elegido no se quita al cambiar el filtro.
+
+9. La base también rechaza una sesión que no cabe, además de la pantalla. El total declarado no puede superar el tiempo, y las películas insertadas, con sus pausas, tampoco. [Decisión] Quien salte la pantalla no puede dejar guardada una noche que la regla diría que no cabe.
 
 ## Supuestos
 

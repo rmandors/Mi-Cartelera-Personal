@@ -34,7 +34,7 @@ Casos borde propuestos al cerrar el PRD. Cada uno se acepta o se rechaza con una
 
 **RB-15. Series y estados que no son «por ver».** Aceptado como excluidos. CA-03. Está en el no alcance y en la regla de qué entra.
 
-**RB-16. Guardar no pasa las películas a «vista».** Aceptado. CA-16. Regla del cliente. Marcar la noche como realizada queda fuera.
+**RB-16. Guardar no pasa las películas a «vista».** Aceptado. CA-16. Regla del cliente. Marcar la noche como realizada es otro gesto: está en RB-30, no en el guardado.
 
 **RB-17. Orden de lo que cabe.** Aceptado: más corta primero, luego título. CA-04. Decisión 2 del PRD. El orden dentro de la sesión armada es el de agregado, para que la primera elegida siga siendo la primera.
 
@@ -56,8 +56,20 @@ Casos borde propuestos al cerrar el PRD. Cada uno se acepta o se rechaza con una
 
 **RB-25. Revalidar el estado «por ver» en el instante de guardar.** Rechazado. [SUPUESTO] del PRD. La lista con la que se armó la noche es la que vale. Revalidar introduciría un fallo nuevo si la otra pestaña cambió el estado a medias.
 
-**RB-26. Combinación automática que llene el tiempo.** Rechazado para esta entrega. Es un opcional. Entra solo con su propia historia, antes de cualquier código.
-
-**RB-27. Impedir en la base de datos una sesión que no cabe, además de impedirlo en la pantalla.** Rechazado para esta entrega. Es un opcional. La regla vive en el cálculo de la app y en sus tests.
-
 **RB-28. Editar el nombre de una sesión ya guardada.** Rechazado. Es un subcaso de RB-18. Si el nombre quedó mal, se borra y se guarda otra. Abrir solo el nombre igual obliga a definir qué más se podría tocar.
+
+## Opcionales aceptados después
+
+Estos se habían dejado fuera. Entran ahora, cada uno con historia y criterio propios, y en la spec antes del código.
+
+**RB-26. Combinación automática que llene el tiempo.** Aceptado como opcional. CA-23. La persona no tiene que probar a mano cada suma. La regla de qué combinación gana está en la decisión 7 del PRD, y la función es pura.
+
+**RB-27. Impedir en la base de datos una sesión que no cabe.** Aceptado como opcional. CA-26. La pantalla sigue siendo la primera barrera. La base cubre a quien inserte filas sin pasar por ella. No reemplaza los tests del dominio.
+
+**RB-29. Filtrar por género lo que cabe.** Aceptado como opcional. CA-24. El género sale del catálogo, no de una columna nueva de la lista. «Todos» deja la noche como estaba.
+
+**RB-30. Marcar una sesión como realizada y pasar sus películas a «vista».** Aceptado como opcional. CA-25. Contradice la regla de guardar solo si se hace en el mismo gesto. Aquí no: guardar sigue sin cambiar el estado, y el cambio ocurre cuando la persona dice que ya vio esa noche. No se puede deshacer desde la sesión, y no edita el plan.
+
+**RB-31. Un revisor adversarial antes de cada commit del agente.** Aceptado como opcional. CA-27. Mira el diff contra la spec y puede frenar el commit. No sustituye los tests.
+
+**RB-32. Publicar la app.** Aceptado como opcional. CA-28. La dirección pública tiene que abrir la misma app, con las claves en el entorno del despliegue y no en el repositorio.
